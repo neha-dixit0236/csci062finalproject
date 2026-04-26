@@ -8,4 +8,8 @@ public class SongInfo {
         this.songName = songName;
         this.genre = genre;
     }
+
+    public String toString() {
+        return "Artist: " + artist + "\n Song Name: " + songName + "\n Genre: " + genre;
+    }
 }

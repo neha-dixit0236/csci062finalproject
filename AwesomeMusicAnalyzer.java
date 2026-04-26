@@ -6,7 +6,7 @@ public interface AwesomeMusicAnalyzer{
 * Takes the raw dataset and categorizes each song into one of the 
 * three subcategories based on user-provided dates. 
 */
- void categorizeData(List<Long> midtermDates, List<Long> breakRanges);
+public void categorizeData(SongInfo song, long timestamp);
 
 /** 
  * Returns the "Musical Identity" (Top Artist/Genre) for a specific category. 
