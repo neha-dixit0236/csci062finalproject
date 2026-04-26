@@ -8,6 +8,8 @@ public class BetterWrapped implements AwesomeMusicAnalyzer {
     private List<MusicEntry> midtermList = new ArrayList<>();
     private List<MusicEntry> breakList = new ArrayList<>();
     private List<MusicEntry> normalList = new ArrayList<>();
+
+    //The list that stores all history data
     private List<MusicEntry> allHistory = new ArrayList<>();
 
     //Giant list to record everything
@@ -26,6 +28,16 @@ public class BetterWrapped implements AwesomeMusicAnalyzer {
     @Override
     public void categorizeData(SongInfo song, long timestamp) {
         MusicEntry entry = new MusicEntry(timestamp, song);
+
+        if (isBreak(timestamp)) {
+            breakList.add(entry);
+        } else if (isMidterm(timestamp)) {
+            midtermList.add(entry);
+        } else {
+            normalList.add(entry);
+        }
+        // Add to the all history list no matter what
+        allHistory.add(entry);
 
     }
 
