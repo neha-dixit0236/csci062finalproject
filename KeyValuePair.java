@@ -1,6 +1,6 @@
 public class KeyValuePair {
 
-    private String timeStamp; //shoud this be string or long?
+    private String timeStamp; //should this be string or long?
     private SongInfo songObject;
 
     public KeyValuePair (String timeStamp, SongInfo songObject){
