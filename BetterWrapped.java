@@ -3,6 +3,8 @@ import java.util.Date;
 import java.util.ArrayList;
 import java.util.List;
 
+// MAINLY WORKING ON THE BETTERWRAPPED2, THIS ONE IS FOR REFERENCE
+
 public class BetterWrapped implements AwesomeMusicAnalyzer {
     // The 3 categories: midTerm, Break, Finals
     private List<MusicEntry> midtermList = new ArrayList<>();
