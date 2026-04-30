@@ -37,6 +37,16 @@ public class BetterWrapped2 {
     //might do what i did with scrobbling and make a new class that reads a text file of a bunch of dates and simplifies that into a list
     //also not sure on whether the list should be filled with longs or strings? and with the timestamp stuff too should that be longs or strings?
     private void analyzeSemester(List<String> midtermDates, List<String> breakDates){
+        List<MusicEntry> midtermList = new ArrayList<>();
+        List<MusicEntry> breakList = new ArrayList<>();
+        List<MusicEntry> normalList = new ArrayList<>();
+
+        //they input the date into the console, and then we put that into a list of our own to classify it as a midterm date
+
+
+
+
+
 
     }
 
