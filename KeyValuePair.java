@@ -7,6 +7,7 @@ public class KeyValuePair {
         this.timeStamp = timeStamp;
         this.songObject = songObject;
     }
+    //key value pair key should be a time stamp object instead of a string to allow for easier comparisons
 
     public String getTimeStamp(){
         return timeStamp;
