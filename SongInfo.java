@@ -9,7 +9,17 @@ public class SongInfo {
         this.genre = genre;
     }
 
-    public String toString() {
-        return "Artist: " + artist + "\n Song Name: " + songName + "\n Genre: " + genre;
+    public String getArtist() {
+        return artist;
     }
+
+    public String getName() {
+        return songName;
+    }
+
+    public String getGenre() {
+        return genre;
+    }
+
+
 }
