@@ -41,9 +41,10 @@ public class BetterWrapped2 {
             if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
                 weekendList.add(entry);
             }
-            else{
+            else if (day == DayOfWeek.MONDAY || day == DayOfWeek.TUESDAY || day == DayOfWeek.WEDNESDAY || day == DayOfWeek.THURSDAY || day == DayOfWeek.FRIDAY){
                 weekdayList.add(entry);
             }
+            //check this else if (just don't want some random timestamp that isn't applicable to accidentally be added into the weekday list with the else statement)
         }
 
         SongStatistics weekdayStats = new SongStatistics(weekdayList);
@@ -95,7 +96,7 @@ public class BetterWrapped2 {
             if (isWithinWindow(songTime, midtermDates, 5)){ //figure out this line (the isWithinWindow helper method might have to be fixed)
                 midtermList.add(entry);
             }
-            else if(isWithinWindow(songTime, breakDates, 0)){
+            else if (isWithinWindow(songTime, breakDates, 0)){
                 breakList.add(entry);
             }
             else{
@@ -151,9 +152,43 @@ public class BetterWrapped2 {
 
 
 
-    // private void analyzeYear(List<String> springDates, List<String> summerDates, List<String> fallDates){
-    //     pass;
-    // }
+
+    private void analyzeYear(List<Timestamp> springDates, List<Timestamp> summerDates, List<Timestamp> fallDates){
+        List<KeyValuePair> springList = new ArrayList<>();
+        List<KeyValuePair> summerList = new ArrayList<>();
+        List<KeyValuePair> fallList = new ArrayList<>();
+
+        for (KeyValuePair entry: allHistory){
+            Timestamp songTime = entry.getTimeStamp();
+
+            if (isWithinWindow(songTime, springDates, 0)){
+                springList.add(entry);
+            }
+            else if (isWithinWindow(songTime, summerDates, 0)){
+                summerList.add(entry);
+            }
+            else if (isWithinWindow(songTime, fallDates, 0)){
+                fallList.add(entry);
+            }
+            //what do we do if the entry is potentially not in this window? should we create a random trash list? or just keep it an else if statement so if it 
+            //doesn't match anywhere, it just doesn't get added to any list? have to consider this for the other analyze methods as well  
+        }
+
+        SongStatistics springStats = new SongStatistics(springList);
+        SongStatistics summerStats = new SongStatistics(summerList);
+        SongStatistics fallStats = new SongStatistics(fallList);
+
+        System.out.println("SPRING STATS");
+        System.out.println(springStats);
+
+        System.out.println("SUMMER STATS");
+        System.out.println(summerStats);
+
+        System.out.println("FALL STATS");
+        System.out.println(fallStats);
+    }
+
+
 
     public static void main(String[] args) {
         // 1. Create the instance
