@@ -1,4 +1,5 @@
 import java.sql.Timestamp;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -29,8 +30,38 @@ public class BetterWrapped2 {
     }
 
     private void analyzeWeekdayVsWeekend(){
+        List<KeyValuePair> weekdayList = new ArrayList<>();
+        List<KeyValuePair> weekendList = new ArrayList<>();
+
+        for (KeyValuePair songEntry: allHistory){
+            Timestamp timestamp = songEntry.getTimeStamp();
+            LocalDateTime dateTime = timestamp.toLocalDateTime();
+            DayOfWeek day = dateTime.getDayOfWeek();
+
+            if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
+                weekendList.add(songEntry);
+            }
+            else{
+                weekdayList.add(songEntry);
+            }
+        }
+
+        SongStatistics weekdayStats = new SongStatistics(weekdayList);
+        SongStatistics weekendStats = new SongStatistics(weekendList);
+
+        
+        System.out.println("WEEKDAY STATS");
+        System.out.println(weekdayStats);
+
+        System.out.println("WEEKEND STATS");
+        System.out.println(weekendStats);
 
     }
+
+
+
+
+
 
     private void analyzeSemester(Timestamp midtermDates, Timestamp breakDates){
         List<KeyValuePair> midtermList = new ArrayList<>();
