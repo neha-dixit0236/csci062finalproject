@@ -33,16 +33,16 @@ public class BetterWrapped2 {
         List<KeyValuePair> weekdayList = new ArrayList<>();
         List<KeyValuePair> weekendList = new ArrayList<>();
 
-        for (KeyValuePair songEntry: allHistory){
-            Timestamp timestamp = songEntry.getTimeStamp();
+        for (KeyValuePair entry: allHistory){
+            Timestamp timestamp = entry.getTimeStamp();
             LocalDateTime dateTime = timestamp.toLocalDateTime();
             DayOfWeek day = dateTime.getDayOfWeek();
 
             if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
-                weekendList.add(songEntry);
+                weekendList.add(entry);
             }
             else{
-                weekdayList.add(songEntry);
+                weekdayList.add(entry);
             }
         }
 
@@ -58,31 +58,67 @@ public class BetterWrapped2 {
 
     }
 
-    
-    private void analyzeSemester(Timestamp midtermDates, Timestamp breakDates){
+
+    //private void analyzeSemester(Timestamp midtermDates, Timestamp breakDates){
+        //List<KeyValuePair> midtermList = new ArrayList<>();
+        //List<KeyValuePair> breakList = new ArrayList<>();
+       // List<KeyValuePair> normalList = new ArrayList<>();
+
+        //they input the date into the console, and then we put that into a list of our own to classify it as a midterm date
+
+        //for (KeyValuePair entry : allHistory) {
+            //Timestamp songTime = entry.getTimeStamp();
+
+            //if (isWithinWindow(songTime, midtermDates, 5)) {
+                //midtermList.add(entry);
+            //} else if (isWithinWindow(songTime, breakDates, 5)) {
+                //breakList.add(entry);
+           // } else {
+                //normalList.add(entry);
+           // }
+            //}
+
+        //System.out.println("======= MIDTERM PERIOD STATS =======");
+        //SongStatistics midtermStats = new SongStatistics(midtermList);
+        //System.out.println(midtermStats);
+
+    //}
+
+    private void analyzeSemester(List<Timestamp> midtermDates, List<Timestamp> breakDates){
         List<KeyValuePair> midtermList = new ArrayList<>();
         List<KeyValuePair> breakList = new ArrayList<>();
         List<KeyValuePair> normalList = new ArrayList<>();
 
-        //they input the date into the console, and then we put that into a list of our own to classify it as a midterm date
-
-        for (KeyValuePair entry : allHistory) {
+        for (KeyValuePair entry: allHistory){
             Timestamp songTime = entry.getTimeStamp();
 
-            if (isWithinWindow(songTime, midtermDates, 5)) {
+            if (isWithinWindow(songTime, midtermDates, 5)){ //figure out this line (the isWithinWindow helper method might have to be fixed)
                 midtermList.add(entry);
-            } else if (isWithinWindow(songTime, breakDates, 5)) {
+            }
+            else if(isWithinWindow(songTime, breakDates, 0)){
                 breakList.add(entry);
-            } else {
+            }
+            else{
                 normalList.add(entry);
             }
-            }
+        }
 
-        System.out.println("======= MIDTERM PERIOD STATS =======");
         SongStatistics midtermStats = new SongStatistics(midtermList);
+        SongStatistics breakStats = new SongStatistics(breakList);
+        SongStatistics normalStats = new SongStatistics(normalList);
+
+        System.out.println("MIDTERM STATS"); //might make these print statements a bit more descriptive (like actually comparing instead of just listing stuff)
         System.out.println(midtermStats);
 
+        System.out.println("BREAK STATS");
+        System.out.println(breakStats);
+
+        System.out.println("NORMAL DAY STATS");
+        System.out.println(normalStats);
+
     }
+
+
 
     /**
      * Checks if a song was played within a specific number of days BEFORE a target date.
