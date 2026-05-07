@@ -36,20 +36,18 @@ public class BetterWrapped2 {
         for (KeyValuePair entry: allHistory){
             Timestamp timestamp = entry.getTimeStamp();
             LocalDateTime dateTime = timestamp.toLocalDateTime();
-            DayOfWeek day = dateTime.getDayOfWeek();
+            DayOfWeek day = dateTime.getDayOfWeek(); // DayOfWeek is enum with exactly 7 values
 
             if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
                 weekendList.add(entry);
             }
-            else if (day == DayOfWeek.MONDAY || day == DayOfWeek.TUESDAY || day == DayOfWeek.WEDNESDAY || day == DayOfWeek.THURSDAY || day == DayOfWeek.FRIDAY){
+            else {
                 weekdayList.add(entry);
             }
-            //check this else if (just don't want some random timestamp that isn't applicable to accidentally be added into the weekday list with the else statement)
         }
 
         SongStatistics weekdayStats = new SongStatistics(weekdayList);
         SongStatistics weekendStats = new SongStatistics(weekendList);
-
         
         System.out.println("WEEKDAY STATS");
         System.out.println(weekdayStats);
@@ -60,30 +58,6 @@ public class BetterWrapped2 {
     }
 
 
-    //private void analyzeSemester(Timestamp midtermDates, Timestamp breakDates){
-        //List<KeyValuePair> midtermList = new ArrayList<>();
-        //List<KeyValuePair> breakList = new ArrayList<>();
-       // List<KeyValuePair> normalList = new ArrayList<>();
-
-        //they input the date into the console, and then we put that into a list of our own to classify it as a midterm date
-
-        //for (KeyValuePair entry : allHistory) {
-            //Timestamp songTime = entry.getTimeStamp();
-
-            //if (isWithinWindow(songTime, midtermDates, 5)) {
-                //midtermList.add(entry);
-            //} else if (isWithinWindow(songTime, breakDates, 5)) {
-                //breakList.add(entry);
-           // } else {
-                //normalList.add(entry);
-           // }
-            //}
-
-        //System.out.println("======= MIDTERM PERIOD STATS =======");
-        //SongStatistics midtermStats = new SongStatistics(midtermList);
-        //System.out.println(midtermStats);
-
-    //}
 
     private void analyzeSemester(List<Timestamp> midtermDates, List<Timestamp> breakDates){
         List<KeyValuePair> midtermList = new ArrayList<>();
@@ -93,10 +67,11 @@ public class BetterWrapped2 {
         for (KeyValuePair entry: allHistory){
             Timestamp songTime = entry.getTimeStamp();
 
-            if (isWithinWindow(songTime, midtermDates, 5)){ //figure out this line (the isWithinWindow helper method might have to be fixed)
+            // we assume the "range" starts from 5 days before midterm starts
+            if (isWithinWindow(songTime, midtermDates, 5)){
                 midtermList.add(entry);
             }
-            else if (isWithinWindow(songTime, breakDates, 0)){
+            else if (isWithinDateRange(songTime, breakDates)){
                 breakList.add(entry);
             }
             else{
@@ -122,35 +97,49 @@ public class BetterWrapped2 {
 
 
     /**
-     * Checks if a song was played within a specific number of days BEFORE a target date.
-    */
+     * Checks if a song is played within the inclusive range from the earliest to the latest date in importantDates. 
+     * For breaks and semesters of a year.
+     * Assumes importantDates is a single continuous period, like only one break
+     * @param songTime
+     * @param importantDates
+     * @return
+     */
+    private boolean isWithinDateRange (Timestamp songTime, List<Timestamp> importantDates) {
+        if (importantDates == null || importantDates.isEmpty()) {
+            return false;
+        }
 
-    //private boolean isWithinWindow(Timestamp songTime, Timestamp targetDate, int daysBefore) {
-        //LocalDateTime ldt = targetDate.toLocalDateTime();
-        //LocalDateTime startDateLDT = ldt.minusDays(daysBefore);
-        //Timestamp startDate = Timestamp.valueOf(startDateLDT);
+        Timestamp start = Collections.min(importantDates);
+        Timestamp end = Collections.max(importantDates);
 
-        //return songTime.after(startDate) && songTime.before(targetDate);
+        return !songTime.before(start) && !songTime.after(end);
+    }
 
-    //}
-
+    /**
+     * Checks if a song is played within n days before a deadline. For midterms.
+     * @param songTime
+     * @param importantDates
+     * @param daysBefore
+     * @return
+     */
     private boolean isWithinWindow(Timestamp songTime, List<Timestamp> importantDates, int daysBefore){
+        if (importantDates == null || importantDates.isEmpty()) {
+            return false;
+        }
+
         for (Timestamp targetDate: importantDates){
             LocalDateTime target = targetDate.toLocalDateTime();
             LocalDateTime startWindow = target.minusDays(daysBefore);
 
             Timestamp startTimestamp = Timestamp.valueOf(startWindow);
 
-            if (songTime.after(startTimestamp) && songTime.before(targetDate)){
+            if (!songTime.before(startTimestamp) && !songTime.after(targetDate)){
                 return true;
             }
         }
 
         return false;
     }
-
-
-
 
 
     private void analyzeYear(List<Timestamp> springDates, List<Timestamp> summerDates, List<Timestamp> fallDates){
@@ -161,17 +150,16 @@ public class BetterWrapped2 {
         for (KeyValuePair entry: allHistory){
             Timestamp songTime = entry.getTimeStamp();
 
-            if (isWithinWindow(songTime, springDates, 0)){
+            if (isWithinDateRange(songTime, springDates)){
                 springList.add(entry);
             }
-            else if (isWithinWindow(songTime, summerDates, 0)){
+            else if (isWithinDateRange(songTime, summerDates)){
                 summerList.add(entry);
             }
-            else if (isWithinWindow(songTime, fallDates, 0)){
+            else if (isWithinDateRange(songTime, fallDates)){
                 fallList.add(entry);
             }
-            //what do we do if the entry is potentially not in this window? should we create a random trash list? or just keep it an else if statement so if it 
-            //doesn't match anywhere, it just doesn't get added to any list? have to consider this for the other analyze methods as well  
+            // songs that are not in spring, summer, or fall windows are intentionally ignored
         }
 
         SongStatistics springStats = new SongStatistics(springList);
@@ -201,7 +189,11 @@ public class BetterWrapped2 {
 
         // 3. Run the test
         System.out.println("Starting Analysis...\n");
-        myWrapped.analyzeSemester(testMidterm, testBreak);
+
+        // test analyzeWeekdayVsWeekend
+        myWrapped.analyze("WEEKDAY_VS_WEEKEND", null, null, null, null, null);
+
+        //myWrapped.analyzeSemester(testMidterm, testBreak);
     }   
         
     } 
