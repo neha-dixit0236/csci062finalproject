@@ -124,14 +124,32 @@ public class BetterWrapped2 {
      * Checks if a song was played within a specific number of days BEFORE a target date.
     */
 
-    private boolean isWithinWindow(Timestamp songTime, Timestamp targetDate, int daysBefore) {
-        LocalDateTime ldt = targetDate.toLocalDateTime();
-        LocalDateTime startDateLDT = ldt.minusDays(daysBefore);
-        Timestamp startDate = Timestamp.valueOf(startDateLDT);
+    //private boolean isWithinWindow(Timestamp songTime, Timestamp targetDate, int daysBefore) {
+        //LocalDateTime ldt = targetDate.toLocalDateTime();
+        //LocalDateTime startDateLDT = ldt.minusDays(daysBefore);
+        //Timestamp startDate = Timestamp.valueOf(startDateLDT);
 
-        return songTime.after(startDate) && songTime.before(targetDate);
+        //return songTime.after(startDate) && songTime.before(targetDate);
 
+    //}
+
+    private boolean isWithinWindow(Timestamp songTime, List<Timestamp> importantDates, int daysBefore){
+        for (Timestamp targetDate: importantDates){
+            LocalDateTime target = targetDate.toLocalDateTime();
+            LocalDateTime startWindow = target.minusDays(daysBefore);
+
+            Timestamp startTimestamp = Timestamp.valueOf(startWindow);
+
+            if (songTime.after(startTimestamp) && songTime.before(targetDate)){
+                return true;
+            }
+        }
+
+        return false;
     }
+
+
+
 
     // private void analyzeYear(List<String> springDates, List<String> summerDates, List<String> fallDates){
     //     pass;
