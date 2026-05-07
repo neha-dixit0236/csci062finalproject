@@ -200,18 +200,52 @@ public class BetterWrapped2 {
         // 1. Create the instance
         BetterWrapped2 myWrapped = new BetterWrapped2("testScrobbles.csv");
 
-        // 2. Create sample test dates (Midterms on 9 29, Break on Nov 24)
+        // 2. Create sample test dates (Midterms on Sep 29, Break on Nov 24, and each semester starts at a reasonable time)
         Timestamp testMidterm = Timestamp.valueOf(LocalDateTime.of(2023, 9, 29, 23, 59));
         Timestamp testBreak = Timestamp.valueOf(LocalDateTime.of(2023, 11, 24, 23, 59));
+        Timestamp testSpringStart = Timestamp.valueOf(LocalDateTime.of(2023,1, 19, 23, 59));
+        Timestamp testSpringEnd = Timestamp.valueOf(LocalDateTime.of(2023,5, 15, 23, 59));
+        Timestamp testSummerStart = Timestamp.valueOf(LocalDateTime.of(2023,5, 16, 23, 59));
+        Timestamp testSummerEnd = Timestamp.valueOf(LocalDateTime.of(2023,8, 23, 23, 59));
+        Timestamp testFallStart = Timestamp.valueOf(LocalDateTime.of(2023,8, 24, 23, 59));
+        Timestamp testFallEnd = Timestamp.valueOf(LocalDateTime.of(2023,12, 11, 23, 59));
 
         // 3. Run the test
-        System.out.println("Starting Analysis...\n");
 
-        // test analyzeWeekdayVsWeekend
+        System.out.println("Testing WEEKDAY_VS_WEEKEND:");
+        System.out.println("Both weekday and weekend are expected to have Dua Lipa as the top artist and Pop as the top genre");
+        System.out.println(".");
         myWrapped.analyze("WEEKDAY_VS_WEEKEND", null, null, null, null, null);
+        System.out.println("---------");
 
-        //myWrapped.analyzeSemester(testMidterm, testBreak);
+        System.out.println("Testing ONE_SEMESTER:");
+        System.out.println("Those played on Sep 29 should be within the midterm window. Those played on Sep 30 should be within the normal days. Break should be empty");
+        System.out.println(".");
+        List<Timestamp> midtermDates = new ArrayList<>();
+        midtermDates.add(testMidterm);
+        List<Timestamp> breakDates = new ArrayList<>();
+        breakDates.add(testBreak);
+        myWrapped.analyze("ONE_SEMESTER", midtermDates, breakDates, null, null, null);
+        System.out.println("---------");
+
+        System.out.println("Testing FULL_YEAR:");
+        System.out.println("All 26 plays should be within the fall semester window. Summer and spring should be empty");
+        System.out.println(".");
+        List<Timestamp> springDates = new ArrayList<>();
+        springDates.add(testSpringStart);
+        springDates.add(testSpringEnd);
+        List<Timestamp> summerDates = new ArrayList<>();
+        summerDates.add(testSummerStart);
+        summerDates.add(testSummerEnd);
+        List<Timestamp> fallDates = new ArrayList<>();
+        fallDates.add(testFallStart);
+        fallDates.add(testFallEnd);
+        myWrapped.analyze("FULL_YEAR", null, null, springDates, summerDates, fallDates);
+        System.out.println("---------");
+
+        // probably still need some tests for exceptions?
+
     }   
         
-    } 
+} 
 
