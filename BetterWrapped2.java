@@ -8,11 +8,23 @@ public class BetterWrapped2 {
     //list of all of the listening history: not sure how to upload the data set and squeeze it into this list
     private List<KeyValuePair> allHistory;
 
+    /**
+     * Builds a BetterWrapped2 object by loading listening history from a CSV
+     * @param fileName path to the CSV file
+     */
     public BetterWrapped2(String fileName){
         this.allHistory = MusicDataLoader.CSVAnalysis(fileName);
     }
 
-    //this will be the most important method for feature 1
+    /**
+     * The most important method to execute Feature 1.
+     * @param comparisonType one of "WEEKDAY_VS_WEEKEND", "ONE_SEMESTER", and "FULL_YEAR"
+     * @param midtermDates list of midterm deadline timestamps, used by ONE_SEMESTER
+     * @param breakDates list of timestamps that bound the academic break, used by ONE_SEMESTER
+     * @param springDates list of timestamps that bound the spring semester, used by FULL_YEAR
+     * @param summerDates list of timestamps that bound the summer break, used by FULL_YEAR
+     * @param fallDates list of timestamps that bound the fall semester, used by FULL_YEAR
+     */
     public void analyze(String comparisonType, List<Timestamp> midtermDates, List<Timestamp> breakDates, List<Timestamp> springDates, List<Timestamp> summerDates, List<Timestamp> fallDates) {
 
         if (comparisonType.equals("WEEKDAY_VS_WEEKEND")){
@@ -29,6 +41,9 @@ public class BetterWrapped2 {
         }
     }
 
+    /**
+     * Analyze listening history on weekdays vs on weekends
+     */
     private void analyzeWeekdayVsWeekend(){
         List<KeyValuePair> weekdayList = new ArrayList<>();
         List<KeyValuePair> weekendList = new ArrayList<>();
@@ -54,11 +69,13 @@ public class BetterWrapped2 {
 
         System.out.println("WEEKEND STATS");
         System.out.println(weekendStats);
-
     }
 
-
-
+    /**
+     * Analyze listening history by midterm season, academic break, and normal days
+     * @param midtermDates list of midterm deadline timestamps
+     * @param breakDates list of timestamps describing the break window
+     */
     private void analyzeSemester(List<Timestamp> midtermDates, List<Timestamp> breakDates){
         List<KeyValuePair> midtermList = new ArrayList<>();
         List<KeyValuePair> breakList = new ArrayList<>();
@@ -67,7 +84,7 @@ public class BetterWrapped2 {
         for (KeyValuePair entry: allHistory){
             Timestamp songTime = entry.getTimeStamp();
 
-            // we assume the "range" starts from 5 days before midterm starts
+            // we assume the "window" starts from 5 days before midterm starts
             if (isWithinWindow(songTime, midtermDates, 5)){
                 midtermList.add(entry);
             }
@@ -94,54 +111,12 @@ public class BetterWrapped2 {
 
     }
 
-
-
     /**
-     * Checks if a song is played within the inclusive range from the earliest to the latest date in importantDates. 
-     * For breaks and semesters of a year.
-     * Assumes importantDates is a single continuous period, like only one break
-     * @param songTime
-     * @param importantDates
-     * @return
+     * Analyze a year's listening history by spring, summer, and fall semesters
+     * @param springDates list of timestamps that bound the spring semester
+     * @param summerDates list of timestamps that bound the summer break
+     * @param fallDates list of timestamps that bound the fall semester
      */
-    private boolean isWithinDateRange (Timestamp songTime, List<Timestamp> importantDates) {
-        if (importantDates == null || importantDates.isEmpty()) {
-            return false;
-        }
-
-        Timestamp start = Collections.min(importantDates);
-        Timestamp end = Collections.max(importantDates);
-
-        return !songTime.before(start) && !songTime.after(end);
-    }
-
-    /**
-     * Checks if a song is played within n days before a deadline. For midterms.
-     * @param songTime
-     * @param importantDates
-     * @param daysBefore
-     * @return
-     */
-    private boolean isWithinWindow(Timestamp songTime, List<Timestamp> importantDates, int daysBefore){
-        if (importantDates == null || importantDates.isEmpty()) {
-            return false;
-        }
-
-        for (Timestamp targetDate: importantDates){
-            LocalDateTime target = targetDate.toLocalDateTime();
-            LocalDateTime startWindow = target.minusDays(daysBefore);
-
-            Timestamp startTimestamp = Timestamp.valueOf(startWindow);
-
-            if (!songTime.before(startTimestamp) && !songTime.after(targetDate)){
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-
     private void analyzeYear(List<Timestamp> springDates, List<Timestamp> summerDates, List<Timestamp> fallDates){
         List<KeyValuePair> springList = new ArrayList<>();
         List<KeyValuePair> summerList = new ArrayList<>();
@@ -176,8 +151,50 @@ public class BetterWrapped2 {
         System.out.println(fallStats);
     }
 
+    /**
+     * Checks if a song is played within the inclusive range from the earliest to the latest date in importantDates. 
+     * For breaks and semesters of a year.
+     * Assumes importantDates is a single continuous period, like only one break
+     * @param songTime the timestamp of the song played
+     * @param importantDates list of timestamps that bound a period of time
+     * @return true if the song was played within the period of time
+     */
+    private boolean isWithinDateRange (Timestamp songTime, List<Timestamp> importantDates) {
+        if (importantDates == null || importantDates.isEmpty()) {
+            return false;
+        }
 
+        Timestamp start = Collections.min(importantDates);
+        Timestamp end = Collections.max(importantDates);
 
+        return !songTime.before(start) && !songTime.after(end);
+    }
+
+    /**
+     * Checks if a song is played within n days before a deadline. For midterms.
+     * @param songTime the timestamp of the song played
+     * @param importantDates list of deadline timestamps
+     * @param daysBefore how many days before each deadline count as part of the window
+     * @return true if the song was played during the deadline "window"
+     */
+    private boolean isWithinWindow(Timestamp songTime, List<Timestamp> importantDates, int daysBefore){
+        if (importantDates == null || importantDates.isEmpty()) {
+            return false;
+        }
+
+        for (Timestamp targetDate: importantDates){
+            LocalDateTime target = targetDate.toLocalDateTime();
+            LocalDateTime startWindow = target.minusDays(daysBefore);
+
+            Timestamp startTimestamp = Timestamp.valueOf(startWindow);
+
+            if (!songTime.before(startTimestamp) && !songTime.after(targetDate)){
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     public static void main(String[] args) {
         // 1. Create the instance
