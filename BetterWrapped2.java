@@ -58,11 +58,7 @@ public class BetterWrapped2 {
 
     }
 
-
-
-
-
-
+    
     private void analyzeSemester(Timestamp midtermDates, Timestamp breakDates){
         List<KeyValuePair> midtermList = new ArrayList<>();
         List<KeyValuePair> breakList = new ArrayList<>();
