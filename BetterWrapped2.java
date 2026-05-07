@@ -190,6 +190,7 @@ public class BetterWrapped2 {
 
 
 
+
     public static void main(String[] args) {
         // 1. Create the instance
         BetterWrapped2 myWrapped = new BetterWrapped2("testScrobbles.csv");
