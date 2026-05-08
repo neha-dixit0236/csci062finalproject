@@ -7,11 +7,11 @@ import java.util.*;
  * Main class to execute all features
  */
 public class BetterWrapped2 {
+    
     // threshold for a day to be counted as an outlier
     private static final int minPlaysPerDay = 4;
     //list of all of the listening history: not sure how to upload the data set and squeeze it into this list
     private List<KeyValuePair> allHistory;
-
 
     /**
      * Builds a BetterWrapped2 object by loading listening history from a CSV
@@ -115,7 +115,6 @@ public class BetterWrapped2 {
         System.out.println("FALL STATS");
         System.out.println(fallStats);
     }
-
 
     //////////////////////////////////////////////////////////
     // helpers to determine the date range
