@@ -144,12 +144,73 @@ public class OutlierDetector {
         }
     }
 
-    public static void main(String[] args) {
-        // ------------------Test 1: No Outliers------------------
-        System.out.println("Test 1: bucket has the same genre so no outliers");
-
+    /**
+     * Helper method for checking if a condition is true (pass) or not (fail)
+     * @param test what we're testing
+     * @param condition a boolean condition to check it
+     */
+    private static void check (String test, boolean condition){
+        if (condition) {
+            System.out.println("Pass: " + test);
+        } else {
+            System.out.println("Fail: " + test);
+        }
     }
 
+    public static void main(String[] args) {
 
+        // ------------------Test 1: no outliers------------------
+        System.out.println("Test 1: bucket has the same genre");
+        List<KeyValuePair> test1 = new ArrayList<>();
+        addPlaysHelper(test1, 2023, 9, 1, "Pop", 5);
+        addPlaysHelper(test1, 2023, 9, 2, "Pop", 10);
+        addPlaysHelper(test1, 2023, 9, 3, "Pop", 4);
+        Map<String, List<KeyValuePair>> test1Buckets = new LinkedHashMap<>();
+        test1Buckets.put("NORMAL", test1);
+        OutlierDetector od1 = new OutlierDetector(test1Buckets);
+        List<OutlierDay> r1 = od1.findOutliers();
+        check("Test 1 no outliers", r1.isEmpty());
+
+        // ------------------Test 2: one outlier------------------
+        System.out.println("Test 2: one clear outlier");
+        List<KeyValuePair> test2 = new ArrayList<>();
+        addPlaysHelper(test2, 2023, 9, 1, "Pop", 8);
+        addPlaysHelper(test2, 2023, 9, 2, "Pop", 10);
+        addPlaysHelper(test2, 2023, 9, 3, "Classical", 4);
+        Map<String, List<KeyValuePair>> test2Buckets = new LinkedHashMap<>();
+        test2Buckets.put("NORMAL", test2);
+        OutlierDetector od2 = new OutlierDetector(test2Buckets);
+        List<OutlierDay> r2 = od2.findOutliers();
+        check("Test 2 one outlier", r2.size()==1);
+        check("Test 2 outlier is on Sep 3", r2.get(0).getDate().equals(LocalDate.of(2023,9,3)));
+        check("Test 2 outlier genre is Classical", r2.get(0).getDayGenre().equals("Classical"));
+        System.out.println("------------------");
+
+        // ------------------Test 3: the outlier day plays below threshold------------------
+        System.out.println("Test 3: outlier day has below threshold plays and doesn't count");
+        List<KeyValuePair> test3 = new ArrayList<>();
+        addPlaysHelper(test3, 2023, 9, 1, "Pop", 8);
+        addPlaysHelper(test3, 2023, 9, 2, "Pop", 10);
+        addPlaysHelper(test3, 2023, 9, 3, "Classical", 2); // below threshold (4)
+        Map<String, List<KeyValuePair>> test3Buckets = new LinkedHashMap<>();
+        test3Buckets.put("NORMAL", test3);
+        OutlierDetector od3 = new OutlierDetector(test3Buckets);
+        List<OutlierDay> r3 = od3.findOutliers();
+        check("Test 3 outlier day is filtered out because of low plays", r3.isEmpty());
+        System.out.println("------------------");
+
+
+        // ------------------Test 4: empty buckets edge case------------------
+        System.out.println("Test 4: outlier day has below threshold plays and doesn't count");
+        Map<String, List<KeyValuePair>> test4Buckets = new LinkedHashMap<>();
+        test4Buckets.put("MIDTERM", new ArrayList<>()); // empty
+        test4Buckets.put("NORMAL", new ArrayList<>(test2)); // reuse test2
+        OutlierDetector od4 = new OutlierDetector(test4Buckets);
+        List<OutlierDay> r4 = od4.findOutliers();
+        check("Test 4 empty bucket doesn't add outliers", r4.size()==1);
+        check("Test 4 outlier comes from NORMAL", r4.get(0).getBucketName().equals("NORMAL"));
+        System.out.println("------------------");
+
+    }
 
 }
