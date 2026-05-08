@@ -9,21 +9,22 @@ import java.util.Map;
 
 
 /**
- * Main class to execute Feature 2 - detecting outliers
+ * Class for feature 2 - detecting outliers
  */
 public class OutlierDetector {
     // a day is an outlier if its dominant genre differs from the user's overall dominant genre in an
     // established period of time (for each feature 1 bucket, like midterm, normal, weekday, etc)
 
     private Map<String,List<KeyValuePair>> bucketHistory;
-    private int minPlaysPerDay = 4; // minimum plays per day for it to be flagged as an outlier (like a threshold)
+    private int minPlaysPerDay; // minimum plays per day for it to be flagged as an outlier (like a threshold)
 
     /**
      * Builds an OutlierDetector object for one's listening history, for all buckets
      * @param bucketHistory map from bucket (e.g. MIDTERM, WEEKDAY) to the songs played in that bucket
      */
-    public OutlierDetector(Map<String,List<KeyValuePair>> bucketHistory) {
+    public OutlierDetector(Map<String,List<KeyValuePair>> bucketHistory, int minPlaysPerDay) {
         this.bucketHistory = bucketHistory;
+        this.minPlaysPerDay = minPlaysPerDay;
     }
 
     /**
@@ -167,7 +168,7 @@ public class OutlierDetector {
         addPlaysHelper(test1, 2023, 9, 3, "Pop", 4);
         Map<String, List<KeyValuePair>> test1Buckets = new LinkedHashMap<>();
         test1Buckets.put("NORMAL", test1);
-        OutlierDetector od1 = new OutlierDetector(test1Buckets);
+        OutlierDetector od1 = new OutlierDetector(test1Buckets, 4);
         List<OutlierDay> r1 = od1.findOutliers();
         check("Test 1 no outliers", r1.isEmpty());
 
@@ -179,7 +180,7 @@ public class OutlierDetector {
         addPlaysHelper(test2, 2023, 9, 3, "Classical", 4);
         Map<String, List<KeyValuePair>> test2Buckets = new LinkedHashMap<>();
         test2Buckets.put("NORMAL", test2);
-        OutlierDetector od2 = new OutlierDetector(test2Buckets);
+        OutlierDetector od2 = new OutlierDetector(test2Buckets, 4);
         List<OutlierDay> r2 = od2.findOutliers();
         check("Test 2 one outlier", r2.size()==1);
         check("Test 2 outlier is on Sep 3", r2.get(0).getDate().equals(LocalDate.of(2023,9,3)));
@@ -194,7 +195,7 @@ public class OutlierDetector {
         addPlaysHelper(test3, 2023, 9, 3, "Classical", 2); // below threshold (4)
         Map<String, List<KeyValuePair>> test3Buckets = new LinkedHashMap<>();
         test3Buckets.put("NORMAL", test3);
-        OutlierDetector od3 = new OutlierDetector(test3Buckets);
+        OutlierDetector od3 = new OutlierDetector(test3Buckets, 4);
         List<OutlierDay> r3 = od3.findOutliers();
         check("Test 3 outlier day is filtered out because of low plays", r3.isEmpty());
         System.out.println("------------------");
@@ -205,7 +206,7 @@ public class OutlierDetector {
         Map<String, List<KeyValuePair>> test4Buckets = new LinkedHashMap<>();
         test4Buckets.put("MIDTERM", new ArrayList<>()); // empty
         test4Buckets.put("NORMAL", new ArrayList<>(test2)); // reuse test2
-        OutlierDetector od4 = new OutlierDetector(test4Buckets);
+        OutlierDetector od4 = new OutlierDetector(test4Buckets, 4);
         List<OutlierDay> r4 = od4.findOutliers();
         check("Test 4 empty bucket doesn't add outliers", r4.size()==1);
         check("Test 4 outlier comes from NORMAL", r4.get(0).getBucketName().equals("NORMAL"));

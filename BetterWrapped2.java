@@ -4,11 +4,14 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 /**
- * Main class for Feature 1 - listening trend analysis
+ * Main class to execute all features
  */
 public class BetterWrapped2 {
+    // threshold for a day to be counted as an outlier
+    private static final int minPlaysPerDay = 4;
     //list of all of the listening history: not sure how to upload the data set and squeeze it into this list
     private List<KeyValuePair> allHistory;
+
 
     /**
      * Builds a BetterWrapped2 object by loading listening history from a CSV
@@ -17,6 +20,10 @@ public class BetterWrapped2 {
     public BetterWrapped2(String fileName){
         this.allHistory = MusicDataLoader.CSVAnalysis(fileName);
     }
+
+    //////////////////////////////////////////////////////////
+    // FEATURE 1: Listening Trend Analysis
+    //////////////////////////////////////////////////////////
 
     /**
      * The most important method to execute Feature 1.
@@ -27,7 +34,12 @@ public class BetterWrapped2 {
      * @param summerDates list of timestamps that bound the summer break, used by FULL_YEAR
      * @param fallDates list of timestamps that bound the fall semester, used by FULL_YEAR
      */
-    public void analyze(String comparisonType, List<Timestamp> midtermDates, List<Timestamp> breakDates, List<Timestamp> springDates, List<Timestamp> summerDates, List<Timestamp> fallDates) {
+    public void analyze(String comparisonType, 
+                        List<Timestamp> midtermDates, 
+                        List<Timestamp> breakDates, 
+                        List<Timestamp> springDates, 
+                        List<Timestamp> summerDates, 
+                        List<Timestamp> fallDates) {
 
         if (comparisonType.equals("WEEKDAY_VS_WEEKEND")){
             analyzeWeekdayVsWeekend();
@@ -44,27 +56,13 @@ public class BetterWrapped2 {
     }
 
     /**
-     * Analyze listening history on weekdays vs on weekends
+     * Analyze listening history on weekdays (mon-fri) vs on weekends (sat-sun)
      */
     private void analyzeWeekdayVsWeekend(){
-        List<KeyValuePair> weekdayList = new ArrayList<>();
-        List<KeyValuePair> weekendList = new ArrayList<>();
+        Map<String, List<KeyValuePair>> buckets = bucketByWeekdayWeekend();
 
-        for (KeyValuePair entry: allHistory){
-            Timestamp timestamp = entry.getTimeStamp();
-            LocalDateTime dateTime = timestamp.toLocalDateTime();
-            DayOfWeek day = dateTime.getDayOfWeek(); // DayOfWeek is enum with exactly 7 values
-
-            if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
-                weekendList.add(entry);
-            }
-            else {
-                weekdayList.add(entry);
-            }
-        }
-
-        SongStatistics weekdayStats = new SongStatistics(weekdayList);
-        SongStatistics weekendStats = new SongStatistics(weekendList);
+        SongStatistics weekdayStats = new SongStatistics(buckets.get("WEEKDAY"));
+        SongStatistics weekendStats = new SongStatistics(buckets.get("WEEKEND"));
         
         System.out.println("WEEKDAY STATS");
         System.out.println(weekdayStats);
@@ -79,28 +77,11 @@ public class BetterWrapped2 {
      * @param breakDates list of timestamps describing the break window
      */
     private void analyzeSemester(List<Timestamp> midtermDates, List<Timestamp> breakDates){
-        List<KeyValuePair> midtermList = new ArrayList<>();
-        List<KeyValuePair> breakList = new ArrayList<>();
-        List<KeyValuePair> normalList = new ArrayList<>();
+        Map<String, List<KeyValuePair>> buckets = bucketBySemester(midtermDates, breakDates);
 
-        for (KeyValuePair entry: allHistory){
-            Timestamp songTime = entry.getTimeStamp();
-
-            // we assume the "window" starts from 5 days before midterm starts
-            if (isWithinWindow(songTime, midtermDates, 5)){
-                midtermList.add(entry);
-            }
-            else if (isWithinDateRange(songTime, breakDates)){
-                breakList.add(entry);
-            }
-            else{
-                normalList.add(entry);
-            }
-        }
-
-        SongStatistics midtermStats = new SongStatistics(midtermList);
-        SongStatistics breakStats = new SongStatistics(breakList);
-        SongStatistics normalStats = new SongStatistics(normalList);
+        SongStatistics midtermStats = new SongStatistics(buckets.get("MIDTERM"));
+        SongStatistics breakStats = new SongStatistics(buckets.get("BREAK"));
+        SongStatistics normalStats = new SongStatistics(buckets.get("NORMAL"));
 
         System.out.println("MIDTERM STATS"); //might make these print statements a bit more descriptive (like actually comparing instead of just listing stuff)
         System.out.println(midtermStats);
@@ -110,7 +91,6 @@ public class BetterWrapped2 {
 
         System.out.println("NORMAL DAY STATS");
         System.out.println(normalStats);
-
     }
 
     /**
@@ -120,28 +100,11 @@ public class BetterWrapped2 {
      * @param fallDates list of timestamps that bound the fall semester
      */
     private void analyzeYear(List<Timestamp> springDates, List<Timestamp> summerDates, List<Timestamp> fallDates){
-        List<KeyValuePair> springList = new ArrayList<>();
-        List<KeyValuePair> summerList = new ArrayList<>();
-        List<KeyValuePair> fallList = new ArrayList<>();
+        Map<String, List<KeyValuePair>> buckets = bucketByYear(springDates, summerDates, fallDates);
 
-        for (KeyValuePair entry: allHistory){
-            Timestamp songTime = entry.getTimeStamp();
-
-            if (isWithinDateRange(songTime, springDates)){
-                springList.add(entry);
-            }
-            else if (isWithinDateRange(songTime, summerDates)){
-                summerList.add(entry);
-            }
-            else if (isWithinDateRange(songTime, fallDates)){
-                fallList.add(entry);
-            }
-            // songs that are not in spring, summer, or fall windows are intentionally ignored
-        }
-
-        SongStatistics springStats = new SongStatistics(springList);
-        SongStatistics summerStats = new SongStatistics(summerList);
-        SongStatistics fallStats = new SongStatistics(fallList);
+        SongStatistics springStats = new SongStatistics(buckets.get("SPRING"));
+        SongStatistics summerStats = new SongStatistics(buckets.get("SUMMER"));
+        SongStatistics fallStats = new SongStatistics(buckets.get("FALL"));
 
         System.out.println("SPRING STATS");
         System.out.println(springStats);
@@ -152,6 +115,11 @@ public class BetterWrapped2 {
         System.out.println("FALL STATS");
         System.out.println(fallStats);
     }
+
+
+    //////////////////////////////////////////////////////////
+    // helpers to determine the date range
+    //////////////////////////////////////////////////////////
 
     /**
      * Checks if a song is played within the inclusive range from the earliest to the latest date in importantDates. 
@@ -198,6 +166,133 @@ public class BetterWrapped2 {
         return false;
     }
 
+    //////////////////////////////////////////////////////////
+    // bucketing helpers for feature 1 and 2
+    //////////////////////////////////////////////////////////
+
+    /**
+     * Bucketing helper for feature 1 and 2. Groups allHistory into WEEKDAY or WEEKEND buckets
+     * @return map from bucket name to plays in that bucket
+     */
+    private Map<String, List<KeyValuePair>> bucketByWeekdayWeekend(){
+        Map <String, List<KeyValuePair>> result = new LinkedHashMap<>();
+        result.put("WEEKDAY", new ArrayList<>());
+        result.put("WEEKEND", new ArrayList<>());
+
+        for (KeyValuePair entry : allHistory) {
+            Timestamp timestamp = entry.getTimeStamp();
+            LocalDateTime dateTime = timestamp.toLocalDateTime();
+            DayOfWeek day = dateTime.getDayOfWeek();
+
+            if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
+                result.get("WEEKEND").add(entry);
+            } else {
+                result.get("WEEKDAY").add(entry);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Bucketing helper for feature 1 and 2. Groups allHistory into MIDTERM, BREAK, or NORMAL buckets
+     * @param midtermDates list of midterm deadline timestamps
+     * @param breakDates list of timestamps describing the break window
+     * @return map from bucket name to plays in that bucket
+     */
+    private Map<String, List<KeyValuePair>> bucketBySemester(List<Timestamp> midtermDates, List<Timestamp> breakDates){
+        Map <String, List<KeyValuePair>> result = new LinkedHashMap<>();
+        result.put("MIDTERM", new ArrayList<>());
+        result.put("BREAK", new ArrayList<>());
+        result.put("NORMAL", new ArrayList<>());
+
+        for (KeyValuePair entry : allHistory) {
+            Timestamp songTime = entry.getTimeStamp();
+
+            // we assume the "window" starts from 5 days before midterm starts
+            if (isWithinWindow(songTime, midtermDates, 5)){
+                result.get("MIDTERM").add(entry);
+            }
+            else if (isWithinDateRange(songTime, breakDates)){
+                result.get("BREAK").add(entry);
+            }
+            else{
+                result.get("NORMAL").add(entry);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Bucketing helper for feature 1 and 2. Groups allHistory into SPRING, SUMMER, or FALL buckets
+     * @param springDates list of timestamps that bound the spring semester
+     * @param summerDates list of timestamps that bound the summer break
+     * @param fallDates list of timestamps that bound the fall semester
+     * @return map from bucket name to plays in that bucket
+     */
+    private Map<String, List<KeyValuePair>> bucketByYear(
+            List<Timestamp> springDates, 
+            List<Timestamp> summerDates, 
+            List<Timestamp> fallDates) {
+
+        Map <String, List<KeyValuePair>> result = new LinkedHashMap<>();
+        result.put("SPRING", new ArrayList<>());
+        result.put("SUMMER", new ArrayList<>());
+        result.put("FALL", new ArrayList<>());
+
+        for (KeyValuePair entry: allHistory){
+            Timestamp songTime = entry.getTimeStamp();
+
+            if (isWithinDateRange(songTime, springDates)){
+                result.get("SPRING").add(entry);
+            }
+            else if (isWithinDateRange(songTime, summerDates)){
+                result.get("SUMMER").add(entry);
+            }
+            else if (isWithinDateRange(songTime, fallDates)){
+                result.get("FALL").add(entry);
+            }
+            // songs that are not in spring, summer, or fall windows are intentionally ignored
+        }
+        return result;
+    }
+
+    //////////////////////////////////////////////////////////
+    // FEATURE 2: Detecting Outliers
+    //////////////////////////////////////////////////////////
+
+    /**
+     * Execute feature 2 for weekday and weekend
+     */
+    public void detectOutliersByWeekdayWeekend(){
+        Map<String, List<KeyValuePair>> buckets = bucketByWeekdayWeekend();
+        runOutlierDetector(buckets);
+    }
+
+    /**
+     * Execute feature 2 for midterm, break, and normal days
+     */
+    public void detectOutliersBySemester(List<Timestamp> midtermDates, List<Timestamp> breakDates){
+        Map<String, List<KeyValuePair>> buckets = bucketBySemester(midtermDates, breakDates);
+        runOutlierDetector(buckets);
+    }
+
+    /**
+     * Execute feature 2 for spring, summer, and fall semester
+     */
+    public void detectOutliersByYear(List<Timestamp> springDates, List<Timestamp> summerDates, List<Timestamp> fallDates){
+        Map<String, List<KeyValuePair>> buckets = bucketByYear(springDates, summerDates, fallDates);
+        runOutlierDetector(buckets);
+    }
+
+    /**
+     * Actually run the process of detecting outliers
+     */
+    private void runOutlierDetector(Map<String, List<KeyValuePair>> buckets) { // private or public????????
+        OutlierDetector detect = new OutlierDetector(buckets, minPlaysPerDay);
+        List<OutlierDay> outliers = detect.findOutliers();
+        detect.printOutliers(outliers);
+    }
+    
     public static void main(String[] args) {
         // 1. Create the instance
         BetterWrapped2 myWrapped = new BetterWrapped2("testScrobbles.csv");
@@ -212,17 +307,17 @@ public class BetterWrapped2 {
         Timestamp testFallStart = Timestamp.valueOf(LocalDateTime.of(2023,8, 24, 23, 59));
         Timestamp testFallEnd = Timestamp.valueOf(LocalDateTime.of(2023,12, 11, 23, 59));
 
-        // 3. Run the test
+        // 3. Run the test for FEATURE 1 - Listening Trend Analysis
 
         // ----------WEEKDAY_VS_WEEKEND----------
-        System.out.println("Testing WEEKDAY_VS_WEEKEND:");
+        System.out.println("Testing WEEKDAY_VS_WEEKEND for Feature 1:");
         System.out.println("Both weekday and weekend are expected to have Dua Lipa as the top artist and Pop as the top genre");
         System.out.println(".");
         myWrapped.analyze("WEEKDAY_VS_WEEKEND", null, null, null, null, null);
         System.out.println("---------");
 
         // ----------ONE_SEMESTER----------
-        System.out.println("Testing ONE_SEMESTER:");
+        System.out.println("Testing ONE_SEMESTER for Feature 1:");
         System.out.println("Those played on Sep 29 should be within the midterm window. Those played on Sep 30 should be within the normal days. Break should be empty");
         System.out.println(".");
         List<Timestamp> midtermDates = new ArrayList<>();
@@ -233,7 +328,7 @@ public class BetterWrapped2 {
         System.out.println("---------");
 
         // ----------FULL_YEAR----------
-        System.out.println("Testing FULL_YEAR:");
+        System.out.println("Testing FULL_YEAR for Feature 1:");
         System.out.println("All 26 plays should be within the fall semester window. Summer and spring should be empty");
         System.out.println(".");
         List<Timestamp> springDates = new ArrayList<>();
@@ -248,7 +343,20 @@ public class BetterWrapped2 {
         myWrapped.analyze("FULL_YEAR", null, null, springDates, summerDates, fallDates);
         System.out.println("---------");
 
-        // probably still need some tests for exceptions?
+        // 4. Run the test for FEATURE 2 - Detecting Outliers
+
+        // ----------WEEKDAY_VS_WEEKEND----------
+        System.out.println("Testing WEEKDAY_VS_WEEKEND for Feature 2:");
+        myWrapped.detectOutliersByWeekdayWeekend();
+
+        // ----------ONE_SEMESTER----------
+        System.out.println("Testing ONE_SEMESTER for Feature 2:");
+        myWrapped.detectOutliersBySemester(midtermDates, breakDates);
+
+        // ----------FULL_YEAR----------
+        System.out.println("Testing FULL_YEAR for Feature 2:");
+        myWrapped.detectOutliersByYear(springDates, summerDates, fallDates);
+        
 
     }   
         
