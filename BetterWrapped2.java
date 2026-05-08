@@ -214,12 +214,14 @@ public class BetterWrapped2 {
 
         // 3. Run the test
 
+        // ----------WEEKDAY_VS_WEEKEND----------
         System.out.println("Testing WEEKDAY_VS_WEEKEND:");
         System.out.println("Both weekday and weekend are expected to have Dua Lipa as the top artist and Pop as the top genre");
         System.out.println(".");
         myWrapped.analyze("WEEKDAY_VS_WEEKEND", null, null, null, null, null);
         System.out.println("---------");
 
+        // ----------ONE_SEMESTER----------
         System.out.println("Testing ONE_SEMESTER:");
         System.out.println("Those played on Sep 29 should be within the midterm window. Those played on Sep 30 should be within the normal days. Break should be empty");
         System.out.println(".");
@@ -230,6 +232,7 @@ public class BetterWrapped2 {
         myWrapped.analyze("ONE_SEMESTER", midtermDates, breakDates, null, null, null);
         System.out.println("---------");
 
+        // ----------FULL_YEAR----------
         System.out.println("Testing FULL_YEAR:");
         System.out.println("All 26 plays should be within the fall semester window. Summer and spring should be empty");
         System.out.println(".");

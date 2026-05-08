@@ -3,6 +3,7 @@ Better Wrapped is a more personalized and context-aware experience that not only
 
 ## Data Structures
 We will be implementing a list of key-value pairs, with the timestamp of each song being the key. Additionally, we will create a SongInfo object to contain information about each song, and the SongInfo object associated with each timestamp will be the value in the key-value pair.
+We will also be mapping from bucket (e.g. midterm, break, spring semester, etc) to the songs played in that bucket, for Feature 2.
 
 ## The Data Set
 We use data from [last.fm](http://last.fm). [This dataset](https://www.kaggle.com/datasets/basharsalman/lastfm) has timestamps as well as the artist, song name, and genre of each song. We will use [this dataset](https://www.kaggle.com/datasets/jacopoferretti/chinook-music-database?select=archive), which includes lots of different songs, for Feature 3.

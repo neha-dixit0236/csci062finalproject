@@ -55,6 +55,17 @@ public class SongStatistics {
         return winner.getKey();
     }
 
+    public String getTopGenre(){
+        return topGenre;
+    }
+
+    public String getTopArtist() {
+        return topArtist;
+    }
+
+    public String getTopSong(){
+        return topSong;
+    }
 
     public String toString(){
         // To be edited

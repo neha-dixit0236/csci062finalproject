@@ -13,7 +13,7 @@ public class OutlierDay {
     private int playCount; // number of plays happened on that date
 
     /**
-     * an OutlierDay object
+     * Builds an OutlierDay object
      */
     public OutlierDay(LocalDate date, String dayGenre, String baselineGenre, String bucketName, int playCount){
         this.date = date;
@@ -23,9 +23,33 @@ public class OutlierDay {
         this.playCount = playCount;
     }
 
-    
+    public LocalDate getDate(){
+        return date;
+    }
 
-    
+    public String getDayGenre(){
+        return dayGenre;
+    }
 
+    public String getBaselineGenre(){
+        return baselineGenre;
+    }
+    
+    public String getBucketName(){
+        return bucketName;
+    }
+
+    public int getPlayCount(){
+        return playCount;
+    }
+
+    /**
+     * Overrides toString so it prints out nicely
+     */
+    @Override
+    public String toString() {
+        return date.toString() + ": played " + dayGenre + " " +
+        playCount + " times, but usually " + baselineGenre + " during " + bucketName;
+    }
 
 }
