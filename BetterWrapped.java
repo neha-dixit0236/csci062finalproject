@@ -242,95 +242,6 @@ public class BetterWrapped {
         return false;
     } //what is the difference between iswithindaterange and iswithinwindow?
 
-    //////////////////////////////////////////////////////////
-    // Olivia: bucketing helpers for feature 1 and 2
-    //////////////////////////////////////////////////////////
-
-    /**
-     * Bucketing helper for feature 1 and 2. Groups allHistory into WEEKDAY or WEEKEND buckets
-     * @return map from bucket name to plays in that bucket
-     */
-    private Map<String, List<KeyValuePair>> bucketByWeekdayWeekend(){
-        Map <String, List<KeyValuePair>> result = new LinkedHashMap<>();
-        result.put("WEEKDAY", new ArrayList<>());
-        result.put("WEEKEND", new ArrayList<>());
-
-        for (KeyValuePair entry : allHistory) {
-            Timestamp timestamp = entry.getTimeStamp();
-            LocalDateTime dateTime = timestamp.toLocalDateTime();
-            DayOfWeek day = dateTime.getDayOfWeek();
-
-            if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
-                result.get("WEEKEND").add(entry);
-            } else {
-                result.get("WEEKDAY").add(entry);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Bucketing helper for feature 1 and 2. Groups allHistory into MIDTERM, BREAK, or NORMAL buckets
-     * @param midtermDates list of midterm deadline timestamps
-     * @param breakDates list of timestamps describing the break window
-     * @return map from bucket name to plays in that bucket
-     */
-    private Map<String, List<KeyValuePair>> bucketBySemester(List<Timestamp> midtermDates, List<Timestamp> breakDates){
-        Map <String, List<KeyValuePair>> result = new LinkedHashMap<>();
-        result.put("MIDTERM", new ArrayList<>());
-        result.put("BREAK", new ArrayList<>());
-        result.put("NORMAL", new ArrayList<>());
-
-        for (KeyValuePair entry : allHistory) {
-            Timestamp songTime = entry.getTimeStamp();
-
-            // we assume the "window" starts from 5 days before midterm starts
-            if (isWithinWindow(songTime, midtermDates, 5)){
-                result.get("MIDTERM").add(entry);
-            }
-            else if (isWithinDateRange(songTime, breakDates)){
-                result.get("BREAK").add(entry);
-            }
-            else{
-                result.get("NORMAL").add(entry);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Bucketing helper for feature 1 and 2. Groups allHistory into SPRING, SUMMER, or FALL buckets
-     * @param springDates list of timestamps that bound the spring semester
-     * @param summerDates list of timestamps that bound the summer break
-     * @param fallDates list of timestamps that bound the fall semester
-     * @return map from bucket name to plays in that bucket
-     */
-    private Map<String, List<KeyValuePair>> bucketByYear(
-            List<Timestamp> springDates, 
-            List<Timestamp> summerDates, 
-            List<Timestamp> fallDates) {
-
-        Map <String, List<KeyValuePair>> result = new LinkedHashMap<>();
-        result.put("SPRING", new ArrayList<>());
-        result.put("SUMMER", new ArrayList<>());
-        result.put("FALL", new ArrayList<>());
-
-        for (KeyValuePair entry: allHistory){
-            Timestamp songTime = entry.getTimeStamp();
-
-            if (isWithinDateRange(songTime, springDates)){
-                result.get("SPRING").add(entry);
-            }
-            else if (isWithinDateRange(songTime, summerDates)){
-                result.get("SUMMER").add(entry);
-            }
-            else if (isWithinDateRange(songTime, fallDates)){
-                result.get("FALL").add(entry);
-            }
-            // songs that are not in spring, summer, or fall windows are intentionally ignored
-        }
-        return result;
-    }
 
     //////////////////////////////////////////////////////////
     // FEATURE 2: Detecting Outliers
@@ -370,19 +281,36 @@ public class BetterWrapped {
         detect.printOutliers(outliers);
     }
 
+
+    //////////////////////////////////////////////////////////
     //FEATURE 3 LAST FEATURE LAST FEATURE!!
+
+
     /**
      * Generates recommendations based on listening trends for weekday and weekend periods.
      * @param recommendationFile the CSV dataset file containing available songs to recommend
      */
     public void recommendByWeekdayWeekend(String recommendationFile){
-        List<Bucket> buckets = bucketWeekdayWeekend();
-        List<RecommendationSong> recommendationSongs = RecommendationLoader.loadSongs(recommendationFile);
-
-        RecommendationEngine engine = new RecommendationEngine(recommendationSongs, allHistory);
-        Map<String, List<RecommendationSong>> recommendations = engine.recommendSongs(buckets);
-        engine.printRecommendations(recommendations);        
+        List<Bucket> buckets = bucketWeekdayWeekend();  
+        runRecommendations(buckets, recommendationFile);
     }
+
+    public void recommendBySemester(List<Timestamp> midtermDates, List<Timestamp> breakDates, String recommendationFile){
+        List<Bucket> buckets = bucketSemester(midtermDates, breakDates);
+        runRecommendations(buckets, recommendationFile);
+    }
+
+    private void runRecommendations(List<Bucket> buckets, String recFile){
+        List<RecommendationSong> recommendationSongs = RecommendationLoader.loadSongs(recFile);
+        RecommendationEngine recEngine = new RecommendationEngine(recommendationSongs, allHistory);
+
+        Map<String, List<RecommendationSong>> recommendedSongs = recEngine.recommendSongs(buckets);
+
+        recEngine.printRecommendations(recommendedSongs);
+
+    }
+
+
 
     /**
      * Main method to test all BetterWrapped features.
