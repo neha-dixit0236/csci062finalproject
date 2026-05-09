@@ -34,30 +34,21 @@ public class BetterWrapped {
      * @param summerDates list of timestamps that bound the summer break, used by FULL_YEAR
      * @param fallDates list of timestamps that bound the fall semester, used by FULL_YEAR
      */
-    //public void analyze(String comparisonType, 
-                        //List<Timestamp> midtermDates, 
-                        //List<Timestamp> breakDates, 
-                        //List<Timestamp> springDates, 
-                        //List<Timestamp> summerDates, 
-                        //List<Timestamp> fallDates) {
+    public void analyze(String comparisonType, List<Timestamp> midtermDates, List<Timestamp> breakDates, List<Timestamp> springDates, List<Timestamp> summerDates, List<Timestamp> fallDates) {
 
-        //if (comparisonType.equals("WEEKDAY_VS_WEEKEND")){
-           // analyzeWeekdayVsWeekend();
-        //}
-        //else if (comparisonType.equals("ONE_SEMESTER")){
-        //    analyzeSemester(midtermDates, breakDates);
-       // }
-       // else if (comparisonType.equals("FULL_YEAR")){
-       //     analyzeYear(springDates, summerDates, fallDates);
-       // }
-       // else{
-       //     System.out.println("Not a valid time window.");
-       // }
-    //}
-
-
-
-    
+        if (comparisonType.equals("WEEKDAY_VS_WEEKEND")){
+            analyzeWeekdayVsWeekend();
+        }
+        else if (comparisonType.equals("ONE_SEMESTER")){
+            analyzeSemester(midtermDates, breakDates);
+        }
+        else if (comparisonType.equals("FULL_YEAR")){
+            analyzeYear(springDates, summerDates, fallDates);
+        }
+        else{
+            System.out.println("Not a valid time window.");
+        }
+    }
 
     /**
      * Analyze listening history on weekdays (mon-fri) vs on weekends (sat-sun)
@@ -67,6 +58,7 @@ public class BetterWrapped {
         printBucketStatistics(buckets);
     }
 
+    //helper for analyzeweekdayvsweekend
     private List<Bucket> bucketWeekdayWeekend() {
         Bucket weekday = new Bucket("WEEKDAY");
         Bucket weekend = new Bucket("WEEKEND");
@@ -90,35 +82,42 @@ public class BetterWrapped {
     }
 
 
-    private void printBucketStatistics(List<Bucket> buckets) {
-        for (Bucket bucket : buckets) {
-            SongStatistics stats = new SongStatistics(bucket.getPlays());
-
-            System.out.println(bucket.getName() + "STATS");
-            System.out.println(stats);
-        }
-    }
-
     /**
      * Analyze listening history by midterm season, academic break, and normal days
      * @param midtermDates list of midterm deadline timestamps
      * @param breakDates list of timestamps describing the break window
      */
     private void analyzeSemester(List<Timestamp> midtermDates, List<Timestamp> breakDates){
-        Map<String, List<KeyValuePair>> buckets = bucketBySemester(midtermDates, breakDates);
+        List<Bucket> buckets = bucketSemester(midtermDates, breakDates);
+        printBucketStatistics(buckets);
+    }
 
-        SongStatistics midtermStats = new SongStatistics(buckets.get("MIDTERM"));
-        SongStatistics breakStats = new SongStatistics(buckets.get("BREAK"));
-        SongStatistics normalStats = new SongStatistics(buckets.get("NORMAL"));
+    //helper for analyzesemester
+    private List<Bucket> bucketSemester(List<Timestamp> midtermDates, List<Timestamp> breakDates){
+        Bucket midterm = new Bucket("MIDTERM");
+        Bucket academicBreak = new Bucket("BREAK");
+        Bucket normal = new Bucket("NORMAL");
 
-        System.out.println("MIDTERM STATS"); //might make these print statements a bit more descriptive (like actually comparing instead of just listing stuff)
-        System.out.println(midtermStats);
+        for (KeyValuePair entry : allHistory){
+            Timestamp songTime = entry.getTimeStamp();
+            if (isWithinWindow(songTime, midtermDates, 5)){
+                midterm.addPlay(entry);
+            }
+            else if (isWithinDateRange(songTime, breakDates)){
+                academicBreak.addPlay(entry);
+            }
+            else{
+                normal.addPlay(entry);
+            }
+        }
 
-        System.out.println("BREAK STATS");
-        System.out.println(breakStats);
+        List<Bucket> result = new ArrayList<>();
 
-        System.out.println("NORMAL DAY STATS");
-        System.out.println(normalStats);
+        result.add(midterm);
+        result.add(academicBreak);
+        result.add(normal);
+
+        return result;
     }
 
     /**
@@ -128,21 +127,47 @@ public class BetterWrapped {
      * @param fallDates list of timestamps that bound the fall semester
      */
     private void analyzeYear(List<Timestamp> springDates, List<Timestamp> summerDates, List<Timestamp> fallDates){
-        Map<String, List<KeyValuePair>> buckets = bucketByYear(springDates, summerDates, fallDates);
-
-        SongStatistics springStats = new SongStatistics(buckets.get("SPRING"));
-        SongStatistics summerStats = new SongStatistics(buckets.get("SUMMER"));
-        SongStatistics fallStats = new SongStatistics(buckets.get("FALL"));
-
-        System.out.println("SPRING STATS");
-        System.out.println(springStats);
-
-        System.out.println("SUMMER STATS");
-        System.out.println(summerStats);
-
-        System.out.println("FALL STATS");
-        System.out.println(fallStats);
+        List<Bucket> buckets = bucketYear(springDates, summerDates, fallDates);
+        printBucketStatistics(buckets);
     }
+
+    //helper for analyzeyear
+    private List<Bucket> bucketYear(List<Timestamp> springDates, List<Timestamp> summerDates, List<Timestamp> fallDates) {
+        Bucket spring = new Bucket("SPRING");
+        Bucket summer = new Bucket("SUMMER");
+        Bucket fall = new Bucket("FALL");
+
+        for (KeyValuePair entry : allHistory) {
+            Timestamp songTime = entry.getTimeStamp();
+
+            if (isWithinDateRange(songTime, springDates)) {
+                spring.addPlay(entry);
+            } else if (isWithinDateRange(songTime, summerDates)) {
+                summer.addPlay(entry);
+            } else if (isWithinDateRange(songTime, fallDates)) {
+                fall.addPlay(entry);
+            }
+        }
+
+        List<Bucket> result = new ArrayList<>();
+
+        result.add(spring);
+        result.add(summer);
+        result.add(fall);
+
+        return result;
+    }
+
+
+    //helper for all private analyze subcategory methods
+    private void printBucketStatistics(List<Bucket> buckets) {
+        for (Bucket bucket : buckets) {
+            SongStatistics stats = new SongStatistics(bucket.getPlays());
+
+            System.out.println(bucket.getName() + "STATS");
+            System.out.println(stats);
+        }
+    } //neha's version of bucket helpers ends here
 
     //////////////////////////////////////////////////////////
     // helpers to determine the date range
@@ -191,10 +216,10 @@ public class BetterWrapped {
         }
 
         return false;
-    }
+    } //what is the difference between iswithindaterange and iswithinwindow?
 
     //////////////////////////////////////////////////////////
-    // bucketing helpers for feature 1 and 2
+    // Olivia: bucketing helpers for feature 1 and 2
     //////////////////////////////////////////////////////////
 
     /**
@@ -291,9 +316,13 @@ public class BetterWrapped {
      * Execute feature 2 for weekday and weekend
      */
     public void detectOutliersByWeekdayWeekend(){
-        Map<String, List<KeyValuePair>> buckets = bucketByWeekdayWeekend();
-        runOutlierDetector(buckets);
+        List<Bucket> buckets = bucketWeekdayWeekend();
+
+        OutlierDetector detector = new OutlierDetector(buckets, MIN_PLAYS_PER_DAY);
+
+        detector.printOutliers(detector.findOutliers());
     }
+
 
     /**
      * Execute feature 2 for midterm, break, and normal days
