@@ -300,6 +300,15 @@ public class BetterWrapped {
         runRecommendations(buckets, recommendationFile);
     }
 
+    public void recommendByYear(List<Timestamp> springDates, List<Timestamp> summerDates, List<Timestamp> fallDates, String recFile){
+        List<Bucket> buckets = bucketYear(springDates, summerDates, fallDates);
+
+        runRecommendations(buckets, recFile);
+    }
+
+
+
+    //helper method for feature 3
     private void runRecommendations(List<Bucket> buckets, String recFile){
         List<RecommendationSong> recommendationSongs = RecommendationLoader.loadSongs(recFile);
         RecommendationEngine recEngine = new RecommendationEngine(recommendationSongs, allHistory);
@@ -307,7 +316,6 @@ public class BetterWrapped {
         Map<String, List<RecommendationSong>> recommendedSongs = recEngine.recommendSongs(buckets);
 
         recEngine.printRecommendations(recommendedSongs);
-
     }
 
 
