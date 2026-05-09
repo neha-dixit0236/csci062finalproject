@@ -21,5 +21,4 @@ public class Bucket {
     public void addPlay (KeyValuePair entry){
         plays.add(entry);
     }
-    
 }
