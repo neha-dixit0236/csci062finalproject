@@ -1,8 +1,6 @@
 import java.util.*;
 
-/**
- * Most of the work for feature 3
- */
+
 public class RecommendationEngine {
     private List<RecommendationSong> recommendationSongs;
     private List<KeyValuePair> listeningHistory;
@@ -74,7 +72,28 @@ public class RecommendationEngine {
         }
 
         return result;
-
     }
-    
+
+    /**
+     * Printing out all of the recommendations in the console
+     * @param recommendations
+     */
+    public void printRecommendations(Map<String, List<RecommendationSong>> recommendations){
+        for (String bucketName : recommendations.keySet()){
+            System.out.println("Based on your top genre in the category " + bucketName + ", we think you'll like these songs:");
+            List<RecommendationSong> songs = recommendations.get(bucketName);
+
+            if (songs == null || songs.isEmpty()){
+                System.out.println("Sorry, we have no recommendations for you.");
+                continue;
+            }
+
+            for (RecommendationSong song: songs){
+                System.out.println(song);
+            }
+
+            System.out.println();
+        }
+    }
 }
+
