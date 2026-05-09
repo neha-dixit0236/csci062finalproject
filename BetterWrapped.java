@@ -354,10 +354,8 @@ public class BetterWrapped {
         List<RecommendationSong> recommendationSongs = RecommendationLoader.loadSongs(recommendationFile);
 
         RecommendationEngine engine = new RecommendationEngine(recommendationSongs, allHistory);
-        engine.printRecommendations(recommendations);
-
         Map<String, List<RecommendationSong>> recommendations = engine.recommendSongs(buckets);
-        
+        engine.printRecommendations(recommendations);        
     }
 
     public static void main(String[] args) {
