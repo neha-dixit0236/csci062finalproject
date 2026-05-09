@@ -15,89 +15,139 @@ public class OutlierDetector {
     // a day is an outlier if its dominant genre differs from the user's overall dominant genre in an
     // established period of time (for each feature 1 bucket, like midterm, normal, weekday, etc)
 
-    private Map<String,List<KeyValuePair>> bucketHistory;
+    private List<Bucket> buckets;
     private int minPlaysPerDay; // minimum plays per day for it to be flagged as an outlier (like a threshold)
 
     /**
      * Builds an OutlierDetector object for one's listening history, for all buckets
      * @param bucketHistory map from bucket (e.g. MIDTERM, WEEKDAY) to the songs played in that bucket
      */
-    public OutlierDetector(Map<String,List<KeyValuePair>> bucketHistory, int minPlaysPerDay) {
-        this.bucketHistory = bucketHistory;
+    public OutlierDetector(List<Bucket> bucketHistory, int minPlaysPerDay) {
+        this.buckets = bucketHistory;
         this.minPlaysPerDay = minPlaysPerDay;
+    } //might have to change comment on this
+
+    public List<OutlierDay> findOutliers(){
+        List<OutlierDay> outliers = new ArrayList<>();
+
+        for (Bucket bucket : buckets){
+            List<KeyValuePair> plays = bucket.getPlays();
+
+            if (plays == null || plays.isEmpty()){
+                continue;
+            }
+
+            String baselineGenre = new SongStatistics(plays).getTopGenre();
+            List<LocalDate> checkedDates = new ArrayList<>();
+
+            for (KeyValuePair entry : plays){
+                LocalDate date = entry.getTimeStamp().toLocalDateTime().toLocalDate();
+
+                if (checkedDates.contains(date)){
+                    continue;
+                }
+
+                checkedDates.add(date);
+
+                List<KeyValuePair> oneDay = new ArrayList<>();
+
+                for (KeyValuePair other : plays){
+                    LocalDate otherDate = other.getTimeStamp().toLocalDateTime().toLocalDate();
+
+                    if (otherDate.equals(date)){
+                        oneDay.add(other);
+                    }
+                }
+
+                if (oneDay.size() < minPlaysPerDay){
+                    continue;
+                }
+
+                String dayGenre = new SongStatistics(oneDay).getTopGenre();
+
+                if (!dayGenre.equals(baselineGenre)){
+                    OutlierDay outlier = new OutlierDay(date, dayGenre, baselineGenre, bucket.getName(), oneDay.size());
+
+                    outliers.add(outlier);
+                }
+            }
+        }
+
+        return outliers;
     }
+
 
     /**
      * For every bucket, find the bucket's top genre (baseline) and group the plays by date to find outlier days
      * @return dates whose most played genre doesn't match the baseline
      */
-    public List<OutlierDay> findOutliers() {
-        List<OutlierDay> result = new ArrayList<>();
+    //public List<OutlierDay> findOutliers() {
+        //List<OutlierDay> result = new ArrayList<>();
 
         // for each bucket
-        for (Map.Entry<String, List<KeyValuePair>> bucket : bucketHistory.entrySet()) {
-            String bucketName = bucket.getKey();
-            List<KeyValuePair> plays = bucket.getValue();
+        //for (Map.Entry<String, List<KeyValuePair>> bucket : bucketHistory.entrySet()) {
+            //String bucketName = bucket.getKey();
+            //List<KeyValuePair> plays = bucket.getValue();
             
             // when nothing is played on that day
-            if (plays.isEmpty() || plays == null) {
-                continue;
-            }
+            //if (plays.isEmpty() || plays == null) {
+               // continue;
+            //}
 
             // top genre of that bucket
-            String baselineGenre = new SongStatistics(plays).getTopGenre();
+            //String baselineGenre = new SongStatistics(plays).getTopGenre();
 
             // group a list of plays by date, then sort dates
-            Map<LocalDate, List<KeyValuePair>> groupedMap = groupByDate(plays);
-            List<LocalDate> dateSorted = new ArrayList<>(groupedMap.keySet());
-            Collections.sort(dateSorted);
+            //Map<LocalDate, List<KeyValuePair>> groupedMap = groupByDate(plays);
+            //List<LocalDate> dateSorted = new ArrayList<>(groupedMap.keySet());
+            //Collections.sort(dateSorted);
 
             // for each date
-            for (LocalDate date : dateSorted) {
-                List<KeyValuePair> dayPlays = groupedMap.get(date);
+            //for (LocalDate date : dateSorted) {
+                //List<KeyValuePair> dayPlays = groupedMap.get(date);
                 
                 // the number of plays is below our threshold (4)
-                if (dayPlays.size() < minPlaysPerDay) {
-                    continue;
-                }
+                //if (dayPlays.size() < minPlaysPerDay) {
+                //    continue;
+                //}
 
                 // top genre of that day
-                String dayGenre = new SongStatistics(dayPlays).getTopGenre();
+ //               String dayGenre = new SongStatistics(dayPlays).getTopGenre();
 
                 // if the top genre of that day is not the same as the top genre of that bucket
-                if (!dayGenre.equals(baselineGenre)) {
-                    OutlierDay od = new OutlierDay(date, dayGenre, baselineGenre, bucketName, dayPlays.size());
-                    result.add(od);
-                }
-            }
-        }
+   //             if (!dayGenre.equals(baselineGenre)) {
+     //               OutlierDay od = new OutlierDay(date, dayGenre, baselineGenre, bucketName, dayPlays.size());
+      //              result.add(od);
+   //             }
+    //        }
+     //   }
 
-        return result;
-    }
+     //   return result;
+    //}
 
     /**
      * Group a list of plays by date. Helper for findOutliers
      * @param plays number of plays from one bucket
      * @return map from date to songs played on that day
      */
-    private Map<LocalDate, List<KeyValuePair>> groupByDate (List<KeyValuePair> plays) {
-        Map<LocalDate, List<KeyValuePair>> groupedMap = new LinkedHashMap<>();
+    //private Map<LocalDate, List<KeyValuePair>> groupByDate (List<KeyValuePair> plays) {
+       // Map<LocalDate, List<KeyValuePair>> groupedMap = new LinkedHashMap<>();
 
         // for each song played
-        for (KeyValuePair entry : plays) {
-            LocalDate key = entry.getTimeStamp().toLocalDateTime().toLocalDate(); // key
-            List<KeyValuePair> list = groupedMap.get(key); // value
+        //for (KeyValuePair entry : plays) {
+           // LocalDate key = entry.getTimeStamp().toLocalDateTime().toLocalDate(); // key
+            //List<KeyValuePair> list = groupedMap.get(key); // value
             
-            if (list == null) {
+            //if (list == null) {
                 // make a new list and add the date and the list of plays as a key-value pair to groupedMap
-                list = new ArrayList<>();
-                groupedMap.put(key, list);
-            }
+            //    list = new ArrayList<>();
+            //    groupedMap.put(key, list);
+            //}
 
-            list.add(entry); // add that play to the list of plays on that day
-        }
-        return groupedMap;
-    }
+            //list.add(entry); // add that play to the list of plays on that day
+       // }
+        //return groupedMap;
+   // }
 
     /**
      * Prints a human-readable result of outlier days and grouped by bucket
