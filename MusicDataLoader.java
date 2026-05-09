@@ -35,9 +35,9 @@ public class MusicDataLoader {
                 String rawDate = parts[0].replace("\"", "").trim();
                 Timestamp timestamp = convertToTimestamp(rawDate);
 
-                String artist = parts[1];
-                String songName = parts[3];
-                String genre = parts[4];
+                String artist = parts[1].trim();
+                String songName = parts[3].trim();
+                String genre = parts[4].trim();
 
                 //creating the SongInfo Object
                 SongInfo song = new SongInfo(artist, songName, genre);
@@ -68,6 +68,7 @@ public class MusicDataLoader {
     public List<KeyValuePair> getListeningHistory(){ //might not need this?
         return listeningHistory;
     }
+
 
     public static void main(String[] args) {
         List<KeyValuePair> history = CSVAnalysis("testScrobbles.csv");
