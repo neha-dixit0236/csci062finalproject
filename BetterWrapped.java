@@ -399,8 +399,6 @@ public class BetterWrapped {
         myWrapped.recommendBySemester(midtermDates, breakDates, "testSongs(Feature3).csv");
         
         myWrapped.recommendByYear(springDates, summerDates, fallDates,"testSongs(Feature3).csv");
-        
-
     }   
         
 } 
