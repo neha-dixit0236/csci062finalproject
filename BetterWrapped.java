@@ -346,13 +346,20 @@ public class BetterWrapped {
     }
 
     //FEATURE 3 LAST FEATURE LAST FEATURE!!
-    
+    /**
+    * Generate recommendations for weekday/weekend
+    */
+    public void recommendByWeekdayWeekend(String recommendationFile){
+        List<Bucket> buckets = bucketWeekdayWeekend();
+        List<RecommendationSong> recommendationSongs = RecommendationLoader.loadSongs(recommendationFile);
 
+        RecommendationEngine engine = new RecommendationEngine(recommendationSongs, allHistory);
+        engine.printRecommendations(recommendations);
 
+        Map<String, List<RecommendationSong>> recommendations = engine.recommendSongs(buckets);
+        
+    }
 
-
-
-    
     public static void main(String[] args) {
         // 1. Create the instance
         BetterWrapped myWrapped = new BetterWrapped("testScrobbles.csv");
