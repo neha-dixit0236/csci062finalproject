@@ -1,14 +1,26 @@
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.sql.Timestamp;
 
+/**
+ * Calculates top statistics (artist, song, genre) from a list of song plays.
+ *
+ * @author Neha Dixit
+ * @author Olivia Ma
+ * @author Stefanie Nguyen
+ */
 public class SongStatistics {
     private String topArtist;
     private String topSong;
     private String topGenre;
 
+    /**
+     * Constructs a SongStatistics object and calculates top values.
+     * 
+     * @param list the list of listening history pairs to analyze
+     */
     public SongStatistics (List<KeyValuePair> list){
         if (list == null || list.isEmpty()) {
             this.topArtist = "None";
@@ -40,6 +52,12 @@ public class SongStatistics {
         this.topGenre = findMax(genreCounts);        
     }
 
+    /**
+     * Helper method to find the key with the maximum count in a frequency map.
+     * 
+     * @param map the frequency map
+     * @return the key with the highest frequency, or "None" if empty
+     */
     private String findMax(HashMap<String, Integer> map){
         String winner = "None";
         int max = 0;
@@ -55,24 +73,49 @@ public class SongStatistics {
 
     }
 
+    /**
+     * Gets the most played genre.
+     * 
+     * @return the top genre
+     */
     public String getTopGenre(){
         return topGenre;
     }
 
+    /**
+     * Gets the most played artist.
+     * 
+     * @return the top artist
+     */
     public String getTopArtist() {
         return topArtist;
     }
 
+    /**
+     * Gets the most played song.
+     * 
+     * @return the top song name
+     */
     public String getTopSong(){
         return topSong;
     }
 
+    /**
+     * Returns a string representation of the calculated statistics.
+     * 
+     * @return formatted string of top artist, song, and genre
+     */
     @Override
     public String toString() {
 
         return "Top Artist: " + topArtist + "\nTop Song: " + topSong + "\nTop Genre: " + topGenre + "\n";
     }
 
+    /**
+     * Main method to test the SongStatistics functionality.
+     * 
+     * @param args command-line arguments (not used)
+     */
     public static void main(String[] args) {
         System.out.println("--- Testing SongStatistics Frequency Analysis ---");
 

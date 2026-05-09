@@ -1,14 +1,20 @@
 import java.util.*;
 
-
+/**
+ * Engine responsible for generating song recommendations based on a user's listening history.
+ *
+ * @author Neha Dixit
+ * @author Olivia Ma
+ * @author Stefanie Nguyen
+ */
 public class RecommendationEngine {
     private List<RecommendationSong> recommendationSongs;
     private List<KeyValuePair> listeningHistory;
 
     /**
      * Constructor for the RecommendationEngine class
-     * @param recommendationSongs
-     * @param listeningHistory
+     * @param recommendationSongs the dataset of available songs to recommend
+     * @param listeningHistory the user's past listening history
      */
     public RecommendationEngine (List<RecommendationSong> recommendationSongs, List<KeyValuePair> listeningHistory){
         this.recommendationSongs = recommendationSongs;
@@ -17,6 +23,8 @@ public class RecommendationEngine {
 
     /**
      * Putting in some recommended songs for each bucket/subcategory
+     * @param buckets the categorized lists of songs the user has listened to
+     * @return a map of bucket names to a list of recommended songs
      */
     public Map<String, List<RecommendationSong>> recommendSongs(List<Bucket> buckets){
         Map<String, List<RecommendationSong>> result = new HashMap<>();
@@ -76,7 +84,7 @@ public class RecommendationEngine {
 
     /**
      * Printing out all of the recommendations in the console
-     * @param recommendations
+     * @param recommendations the map of recommended songs per bucket
      */
     public void printRecommendations(Map<String, List<RecommendationSong>> recommendations){
         for (String bucketName : recommendations.keySet()){
@@ -96,4 +104,3 @@ public class RecommendationEngine {
         }
     }
 }
-

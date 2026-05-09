@@ -3,11 +3,19 @@ import java.util.*;
 
 /**
  * Loads all the recommendation songs from the CSV
+ * 
+ * @author Neha Dixit
+ * @author Olivia Ma
+ * @author Stefanie Nguyen
  */
+
 public class RecommendationLoader {
     
     /**
-     * The CSV format is "track number,track,artist name,genre"
+     * Loads recommendations from a CSV file where the format is "track number,track,artist name,genre".
+     * 
+     * @param fileName the path to the CSV file containing recommendations
+     * @return a list of loaded RecommendationSong objects
      */
     public static List<RecommendationSong> loadSongs(String fileName){
         List<RecommendationSong> songs = new ArrayList<>();

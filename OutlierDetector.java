@@ -1,16 +1,18 @@
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.sql.Timestamp;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.List;
 
 
 /**
  * Class for feature 2 - detecting outliers
+ * 
+ * @author Neha Dixit
+ * @author Olivia Ma
+ * @author Stefanie Nguyen
  */
+
 public class OutlierDetector {
     // a day is an outlier if its dominant genre differs from the user's overall dominant genre in an
     // established period of time (for each feature 1 bucket, like midterm, normal, weekday, etc)
@@ -21,12 +23,17 @@ public class OutlierDetector {
     /**
      * Builds an OutlierDetector object for one's listening history, for all buckets
      * @param bucketHistory map from bucket (e.g. MIDTERM, WEEKDAY) to the songs played in that bucket
+     * @param minPlaysPerDay minimum number of plays per day for a day to be considered an outlier
      */
     public OutlierDetector(List<Bucket> bucketHistory, int minPlaysPerDay) {
         this.buckets = bucketHistory;
         this.minPlaysPerDay = minPlaysPerDay;
     } //might have to change comment on this
 
+    /**
+     * Iterates through buckets to find days where the most played genre does not match the bucket's overall top genre.
+     * @return a list of OutlierDay objects containing information about the outlier days
+     */
     public List<OutlierDay> findOutliers(){
         List<OutlierDay> outliers = new ArrayList<>();
 
@@ -179,6 +186,11 @@ public class OutlierDetector {
 
     /**
      * Helper method for testing by "playing" something on a specific date with a genre of that song
+     * @param year the year of the play
+     * @param month the month of the play
+     * @param day the day of the play
+     * @param genre the genre of the song
+     * @return a KeyValuePair representing the play event
      */
     private static KeyValuePair playHelper (int year, int month, int day, String genre) {
         Timestamp ts = Timestamp.valueOf(LocalDateTime.of(year, month, day, 23, 59));
@@ -188,6 +200,12 @@ public class OutlierDetector {
 
     /**
      * Helper method for adding a number of plays of a genre into a list on an given date
+     * @param list the list to add the plays to
+     * @param year the year of the play
+     * @param month the month of the play
+     * @param day the day of the play
+     * @param genre the genre of the song
+     * @param count the number of plays to add
      */
     private static void addPlaysHelper (List<KeyValuePair> list, int year, int month, int day, String genre, int count) {
         for (int i = 0; i < count; i++) {
@@ -208,6 +226,10 @@ public class OutlierDetector {
         }
     }
 
+    /**
+     * Main method to test the OutlierDetector logic.
+     * @param args command-line arguments (not used)
+     */
     public static void main(String[] args) {
 
         // ------------------Test 1: no outliers------------------

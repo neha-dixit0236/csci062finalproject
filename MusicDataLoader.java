@@ -1,20 +1,32 @@
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.sql.Timestamp;
-import java.time.format.DateTimeFormatter;
-import java.time.LocalDateTime;
 
-
+/**
+ * Utility class for loading music listening history from a CSV file.
+ *
+ * @author Neha Dixit
+ * @author Olivia Ma
+ * @author Stefanie Nguyen
+ */
 public class MusicDataLoader {
 
     // Define the format to match "30 Sep 2023, 0:31"
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd MMM yyyy, H:mm", Locale.ENGLISH);
     private List<KeyValuePair> listeningHistory;
 
+    /**
+     * Reads and parses a CSV file into a list of listening history records.
+     * 
+     * @param file the path to the CSV file
+     * @return a list of KeyValuePair objects representing the listening history
+     */
     public static List<KeyValuePair> CSVAnalysis(String file){
         List<KeyValuePair> listeningHistory = new ArrayList<>();
 
@@ -58,18 +70,31 @@ public class MusicDataLoader {
         return listeningHistory;
     }
 
-    //process date time to store the date time object with the song -> timestamp instead of a string is a date time object
-    //helper method here
+    /**
+     * Converts a formatted date string to a Timestamp object.
+     * 
+     * @param dateString the formatted date string to parse
+     * @return the parsed Timestamp object
+     */
     private static Timestamp convertToTimestamp(String dateString) {
         LocalDateTime ldt = LocalDateTime.parse(dateString, FORMATTER);
         return Timestamp.valueOf(ldt);
     }
 
+    /**
+     * Gets the listening history.
+     * 
+     * @return the listening history list
+     */
     public List<KeyValuePair> getListeningHistory(){ //might not need this?
         return listeningHistory;
     }
 
-
+    /**
+     * Main method to test data loading functionality.
+     * 
+     * @param args command-line arguments (not used)
+     */
     public static void main(String[] args) {
         List<KeyValuePair> history = CSVAnalysis("testScrobbles.csv");
         for (KeyValuePair entry : history) {
@@ -79,4 +104,3 @@ public class MusicDataLoader {
     }
     }
 }
-

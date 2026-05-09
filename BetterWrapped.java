@@ -4,6 +4,13 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 /**
+ * @author Neha Dixit
+ * @author Olivia Ma
+ * @author Stefanie Nguyen
+ */
+
+
+/**
  * Main class to execute all features
  */
 public class BetterWrapped {
@@ -58,7 +65,10 @@ public class BetterWrapped {
         printBucketStatistics(buckets);
     }
 
-    //helper for analyzeweekdayvsweekend
+    /**
+     * Helper method to bucket listening history into WEEKDAY and WEEKEND.
+     * @return a list containing the weekday and weekend buckets
+     */
     private List<Bucket> bucketWeekdayWeekend() {
         Bucket weekday = new Bucket("WEEKDAY");
         Bucket weekend = new Bucket("WEEKEND");
@@ -92,7 +102,12 @@ public class BetterWrapped {
         printBucketStatistics(buckets);
     }
 
-    //helper for analyzesemester
+    /**
+     * Helper method to bucket listening history into MIDTERM, BREAK, and NORMAL periods.
+     * @param midtermDates list of midterm deadline timestamps
+     * @param breakDates list of timestamps bounding the break
+     * @return a list containing the categorized buckets
+     */
     private List<Bucket> bucketSemester(List<Timestamp> midtermDates, List<Timestamp> breakDates){
         Bucket midterm = new Bucket("MIDTERM");
         Bucket academicBreak = new Bucket("BREAK");
@@ -131,7 +146,13 @@ public class BetterWrapped {
         printBucketStatistics(buckets);
     }
 
-    //helper for analyzeyear
+    /**
+     * Helper method to bucket listening history into SPRING, SUMMER, and FALL semesters.
+     * @param springDates timestamps bounding the spring semester
+     * @param summerDates timestamps bounding the summer semester
+     * @param fallDates timestamps bounding the fall semester
+     * @return a list containing the categorized buckets
+     */
     private List<Bucket> bucketYear(List<Timestamp> springDates, List<Timestamp> summerDates, List<Timestamp> fallDates) {
         Bucket spring = new Bucket("SPRING");
         Bucket summer = new Bucket("SUMMER");
@@ -159,7 +180,10 @@ public class BetterWrapped {
     }
 
 
-    //helper for all private analyze subcategory methods
+    /**
+     * Helper method to print song statistics for a given list of buckets.
+     * @param buckets the list of buckets to analyze and print
+     */
     private void printBucketStatistics(List<Bucket> buckets) {
         for (Bucket bucket : buckets) {
             SongStatistics stats = new SongStatistics(bucket.getPlays());
@@ -337,7 +361,8 @@ public class BetterWrapped {
     }
 
     /**
-     * Actually run the process of detecting outliers
+     * Runs the outlier detection process for a given list of buckets and prints the results.
+     * @param buckets the list of categorized buckets to scan for outliers
      */
     private void runOutlierDetector(List<Bucket> buckets) { // private or public????????
         OutlierDetector detect = new OutlierDetector(buckets, MIN_PLAYS_PER_DAY);
@@ -347,8 +372,9 @@ public class BetterWrapped {
 
     //FEATURE 3 LAST FEATURE LAST FEATURE!!
     /**
-    * Generate recommendations for weekday/weekend
-    */
+     * Generates recommendations based on listening trends for weekday and weekend periods.
+     * @param recommendationFile the CSV dataset file containing available songs to recommend
+     */
     public void recommendByWeekdayWeekend(String recommendationFile){
         List<Bucket> buckets = bucketWeekdayWeekend();
         List<RecommendationSong> recommendationSongs = RecommendationLoader.loadSongs(recommendationFile);
@@ -358,6 +384,10 @@ public class BetterWrapped {
         engine.printRecommendations(recommendations);        
     }
 
+    /**
+     * Main method to test all BetterWrapped features.
+     * @param args command-line arguments (not used)
+     */
     public static void main(String[] args) {
         // 1. Create the instance
         BetterWrapped myWrapped = new BetterWrapped("testScrobbles.csv");
@@ -426,4 +456,3 @@ public class BetterWrapped {
     }   
         
 } 
-
