@@ -344,6 +344,14 @@ public class BetterWrapped {
         List<OutlierDay> outliers = detect.findOutliers();
         detect.printOutliers(outliers);
     }
+
+    //FEATURE 3 LAST FEATURE LAST FEATURE!!!
+    
+
+
+
+
+
     
     public static void main(String[] args) {
         // 1. Create the instance
