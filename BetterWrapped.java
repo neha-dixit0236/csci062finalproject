@@ -387,6 +387,18 @@ public class BetterWrapped {
         // ----------FULL_YEAR----------
         System.out.println("Testing FULL_YEAR for Feature 2:");
         myWrapped.detectOutliersByYear(springDates, summerDates, fallDates);
+
+
+
+        // 5. Running tests for FEATURE 3 - Focused Recommendations Based on Listening History
+
+        System.out.println("Testing FEATURE 3:");
+
+        myWrapped.recommendByWeekdayWeekend("testSongs(Feature3).csv");
+
+        myWrapped.recommendBySemester(midtermDates, breakDates, "testSongs(Feature3).csv");
+        
+        myWrapped.recommendByYear(springDates, summerDates, fallDates,"testSongs(Feature3).csv");
         
 
     }   
