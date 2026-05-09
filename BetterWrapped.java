@@ -9,7 +9,7 @@ import java.util.*;
 public class BetterWrapped {
     
     // threshold for a day to be counted as an outlier
-    private static final int minPlaysPerDay = 4;
+    private static final int MIN_PLAYS_PER_DAY = 4;
     //list of all of the listening history: not sure how to upload the data set and squeeze it into this list
     private List<KeyValuePair> allHistory;
 
@@ -34,41 +34,69 @@ public class BetterWrapped {
      * @param summerDates list of timestamps that bound the summer break, used by FULL_YEAR
      * @param fallDates list of timestamps that bound the fall semester, used by FULL_YEAR
      */
-    public void analyze(String comparisonType, 
-                        List<Timestamp> midtermDates, 
-                        List<Timestamp> breakDates, 
-                        List<Timestamp> springDates, 
-                        List<Timestamp> summerDates, 
-                        List<Timestamp> fallDates) {
+    //public void analyze(String comparisonType, 
+                        //List<Timestamp> midtermDates, 
+                        //List<Timestamp> breakDates, 
+                        //List<Timestamp> springDates, 
+                        //List<Timestamp> summerDates, 
+                        //List<Timestamp> fallDates) {
 
-        if (comparisonType.equals("WEEKDAY_VS_WEEKEND")){
-            analyzeWeekdayVsWeekend();
-        }
-        else if (comparisonType.equals("ONE_SEMESTER")){
-            analyzeSemester(midtermDates, breakDates);
-        }
-        else if (comparisonType.equals("FULL_YEAR")){
-            analyzeYear(springDates, summerDates, fallDates);
-        }
-        else{
-            System.out.println("Not a valid time window.");
-        }
-    }
+        //if (comparisonType.equals("WEEKDAY_VS_WEEKEND")){
+           // analyzeWeekdayVsWeekend();
+        //}
+        //else if (comparisonType.equals("ONE_SEMESTER")){
+        //    analyzeSemester(midtermDates, breakDates);
+       // }
+       // else if (comparisonType.equals("FULL_YEAR")){
+       //     analyzeYear(springDates, summerDates, fallDates);
+       // }
+       // else{
+       //     System.out.println("Not a valid time window.");
+       // }
+    //}
+
+
+
+    
 
     /**
      * Analyze listening history on weekdays (mon-fri) vs on weekends (sat-sun)
      */
     private void analyzeWeekdayVsWeekend(){
-        Map<String, List<KeyValuePair>> buckets = bucketByWeekdayWeekend();
+        List<Bucket> buckets = bucketWeekdayWeekend();
+        printBucketStatistics(buckets);
+    }
 
-        SongStatistics weekdayStats = new SongStatistics(buckets.get("WEEKDAY"));
-        SongStatistics weekendStats = new SongStatistics(buckets.get("WEEKEND"));
-        
-        System.out.println("WEEKDAY STATS");
-        System.out.println(weekdayStats);
+    private List<Bucket> bucketWeekdayWeekend() {
+        Bucket weekday = new Bucket("WEEKDAY");
+        Bucket weekend = new Bucket("WEEKEND");
 
-        System.out.println("WEEKEND STATS");
-        System.out.println(weekendStats);
+        for (KeyValuePair entry : allHistory) {
+            DayOfWeek day = entry.getTimeStamp().toLocalDateTime().getDayOfWeek();
+
+            if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
+                weekend.addPlay(entry);
+            } 
+            else {
+                weekday.addPlay(entry);
+            }
+        }
+
+        List<Bucket> result = new ArrayList<>();
+        result.add(weekday);
+        result.add(weekend);
+
+        return result;
+    }
+
+
+    private void printBucketStatistics(List<Bucket> buckets) {
+        for (Bucket bucket : buckets) {
+            SongStatistics stats = new SongStatistics(bucket.getPlays());
+
+            System.out.println(bucket.getName() + "STATS");
+            System.out.println(stats);
+        }
     }
 
     /**
