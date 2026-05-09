@@ -317,18 +317,14 @@ public class BetterWrapped {
      */
     public void detectOutliersByWeekdayWeekend(){
         List<Bucket> buckets = bucketWeekdayWeekend();
-
-        OutlierDetector detector = new OutlierDetector(buckets, MIN_PLAYS_PER_DAY);
-
-        detector.printOutliers(detector.findOutliers());
+        runOutlierDetector(buckets);
     }
-
 
     /**
      * Execute feature 2 for midterm, break, and normal days
      */
     public void detectOutliersBySemester(List<Timestamp> midtermDates, List<Timestamp> breakDates){
-        Map<String, List<KeyValuePair>> buckets = bucketBySemester(midtermDates, breakDates);
+        List<Bucket> buckets = bucketSemester(midtermDates, breakDates);
         runOutlierDetector(buckets);
     }
 
@@ -336,15 +332,15 @@ public class BetterWrapped {
      * Execute feature 2 for spring, summer, and fall semester
      */
     public void detectOutliersByYear(List<Timestamp> springDates, List<Timestamp> summerDates, List<Timestamp> fallDates){
-        Map<String, List<KeyValuePair>> buckets = bucketByYear(springDates, summerDates, fallDates);
+        List<Bucket> buckets = bucketYear(springDates, summerDates, fallDates);
         runOutlierDetector(buckets);
     }
 
     /**
      * Actually run the process of detecting outliers
      */
-    private void runOutlierDetector(Map<String, List<KeyValuePair>> buckets) { // private or public????????
-        OutlierDetector detect = new OutlierDetector(buckets, minPlaysPerDay);
+    private void runOutlierDetector(List<Bucket> buckets) { // private or public????????
+        OutlierDetector detect = new OutlierDetector(buckets, MIN_PLAYS_PER_DAY);
         List<OutlierDay> outliers = detect.findOutliers();
         detect.printOutliers(outliers);
     }
