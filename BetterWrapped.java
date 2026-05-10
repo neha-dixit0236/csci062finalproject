@@ -507,6 +507,41 @@ public class BetterWrapped {
         myWrapped.recommendBySemester(midtermDates, breakDates, "MasterListofSongs(Feature3).csv");
         
         myWrapped.recommendByYear(springDates, summerDates, fallDates,"MasterListofSongs(Feature3).csv");
+
+        // 6. Asking for User Input
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("\n=========================================");
+        System.out.println("Welcome to Better Wrapped Interactive!");
+        System.out.println("=========================================");
+        
+        System.out.print("Please enter the path to your listening history CSV file (e.g., testScrobbles.csv): ");
+        String userCsv = scanner.nextLine().trim();
+        BetterWrapped userWrapped = new BetterWrapped(userCsv);
+        
+        System.out.print("What time window would you like to analyze? (WEEKDAY_VS_WEEKEND, ONE_SEMESTER, FULL_YEAR): ");
+        String userWindow = scanner.nextLine().trim().toUpperCase();
+        
+        System.out.print("Please enter the path to the recommendations dataset (e.g., MasterListofSongs(Feature3).csv): ");
+        String userRecs = scanner.nextLine().trim();
+        
+        System.out.println("\n--- Generating your Better Wrapped ---");
+        if (userWindow.equals("WEEKDAY_VS_WEEKEND")) {
+            userWrapped.analyze(userWindow, null, null, null, null, null);
+            userWrapped.detectOutliersByWeekdayWeekend();
+            userWrapped.recommendByWeekdayWeekend(userRecs);
+        } else if (userWindow.equals("ONE_SEMESTER")) {
+            userWrapped.analyze(userWindow, midtermDates, breakDates, null, null, null);
+            userWrapped.detectOutliersBySemester(midtermDates, breakDates);
+            userWrapped.recommendBySemester(midtermDates, breakDates, userRecs);
+        } else if (userWindow.equals("FULL_YEAR")) {
+            userWrapped.analyze(userWindow, null, null, springDates, summerDates, fallDates);
+            userWrapped.detectOutliersByYear(springDates, summerDates, fallDates);
+            userWrapped.recommendByYear(springDates, summerDates, fallDates, userRecs);
+        } else {
+            System.out.println("Invalid time window. Please run the program again.");
+        }
+        
+        scanner.close();
     }   
         
 } 
