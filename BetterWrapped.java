@@ -496,11 +496,11 @@ public class BetterWrapped {
 
         System.out.println("Testing FEATURE 3:");
 
-        myWrapped.recommendByWeekdayWeekend("testSongs(Feature3).csv");
+        myWrapped.recommendByWeekdayWeekend("MasterListofSongs(Feature3).csv");
 
-        myWrapped.recommendBySemester(midtermDates, breakDates, "testSongs(Feature3).csv");
+        myWrapped.recommendBySemester(midtermDates, breakDates, "MasterListofSongs(Feature3).csv");
         
-        myWrapped.recommendByYear(springDates, summerDates, fallDates,"testSongs(Feature3).csv");
+        myWrapped.recommendByYear(springDates, summerDates, fallDates,"MasterListofSongs(Feature3).csv");
     }   
         
 } 
