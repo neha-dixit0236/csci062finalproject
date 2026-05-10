@@ -63,6 +63,7 @@ public class BetterWrapped {
     private void analyzeWeekdayVsWeekend(){
         List<Bucket> buckets = bucketWeekdayWeekend();
         printBucketStatistics(buckets);
+        compareBuckets(buckets);
     }
 
     /**
@@ -100,6 +101,7 @@ public class BetterWrapped {
     private void analyzeSemester(List<Timestamp> midtermDates, List<Timestamp> breakDates){
         List<Bucket> buckets = bucketSemester(midtermDates, breakDates);
         printBucketStatistics(buckets);
+        compareBuckets(buckets);
     }
 
     /**
@@ -144,6 +146,7 @@ public class BetterWrapped {
     private void analyzeYear(List<Timestamp> springDates, List<Timestamp> summerDates, List<Timestamp> fallDates){
         List<Bucket> buckets = bucketYear(springDates, summerDates, fallDates);
         printBucketStatistics(buckets);
+        compareBuckets(buckets);
     }
 
     /**
@@ -191,7 +194,106 @@ public class BetterWrapped {
             System.out.println(bucket.getName() + "STATS");
             System.out.println(stats);
         }
-    } //neha's version of bucket helpers ends here
+    } 
+
+    //////////////////////////////////////////////////////////
+    //FEATURE 1 COMPARISON HELPERS
+
+    /**
+    * Compares buckets and prints how listening behavior changes.
+    * @param buckets list of categorized buckets
+    */
+    private void compareBuckets(List<Bucket> buckets){
+        System.out.println("Listening Trend Comparison:");
+
+        for (int i = 0; i < buckets.size(); i++){
+            for (int j = i + 1; j < buckets.size(); j++){
+                Bucket first = buckets.get(i);
+                Bucket second = buckets.get(j);
+
+                compareTwoBuckets(first, second);
+            }
+        }
+        System.out.println();
+    }
+
+    /**
+    * Compare two listening buckets.
+    * @param first first bucket
+    * @param second second bucket
+    */
+    private void compareTwoBuckets(Bucket first, Bucket second){
+        SongStatistics stats1 = new SongStatistics(first.getPlays());
+
+        SongStatistics stats2 = new SongStatistics(second.getPlays());
+
+        System.out.println(first.getName() + " vs " + second.getName());
+
+        compareGenres(stats1, stats2);
+        compareArtists(stats1, stats2);
+        compareSongs(stats1, stats2);
+
+        System.out.println("---------");
+    }
+
+    /**
+    * Compare the top genres between two listening time windows
+    */
+    private void compareGenres(SongStatistics stats1, SongStatistics stats2){
+        String genre1 = stats1.getTopGenre();
+        String genre2 = stats2.getTopGenre();
+        if (genre1.equals("None") || genre2.equals("None")){
+            System.out.println("Not enough data to compare genres.");
+        }
+        else if (genre1.equals(genre2)){
+            System.out.println("Your top genre stayed consistent. Your top genre was: " + genre1);
+        }
+        else{
+            System.out.println("Your top genre shifted from " + genre1 + " to " + genre2);
+        }
+    }
+
+    /**
+    * Compare the top artists between two listening time windows
+    */
+    private void compareArtists(SongStatistics stats1, SongStatistics stats2){
+        String artist1 = stats1.getTopArtist();
+        String artist2 = stats2.getTopArtist();
+
+        if (artist1.equals("None") || artist2.equals("None")){
+            System.out.println("Not enough data to compare artists.");
+        }
+        else if (artist1.equals(artist2)){
+            System.out.println("Favorite artist stayed the same: " + artist1);
+        }
+        else{
+            System.out.println("Favorite artist changed from " + artist1 + " to " + artist2);
+        }
+    }
+
+    /**
+    * Compare the top songs between the two listening windows.
+    */
+    private void compareSongs(SongStatistics stats1, SongStatistics stats2){
+        String song1 = stats1.getTopSong();
+        String song2 = stats2.getTopSong();
+        if (song1.equals("None") || song2.equals("None")){
+            System.out.println("Not enough data to compare songs.");
+        }
+        else if (song1.equals(song2)){
+            System.out.println("Top song stayed consistent: " + song1);
+        }
+        else{
+            System.out.println("Top song changed from " + song1 + " to " + song2);
+        }
+    }
+
+
+
+
+
+
+
 
     //////////////////////////////////////////////////////////
     // helpers to determine the date range
