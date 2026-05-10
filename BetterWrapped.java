@@ -238,6 +238,8 @@ public class BetterWrapped {
 
     /**
     * Compare the top genres between two listening time windows
+    * @param stats1 Song statistics of the first time window
+    * @param stats2 Song statistics of the second time window
     */
     private void compareGenres(SongStatistics stats1, SongStatistics stats2){
         String genre1 = stats1.getTopGenre();
@@ -255,6 +257,8 @@ public class BetterWrapped {
 
     /**
     * Compare the top artists between two listening time windows
+    * @param stats1 Song statistics of the first time window
+    * @param stats2 Song statistics of the second time window
     */
     private void compareArtists(SongStatistics stats1, SongStatistics stats2){
         String artist1 = stats1.getTopArtist();
@@ -273,6 +277,8 @@ public class BetterWrapped {
 
     /**
     * Compare the top songs between the two listening windows.
+    * @param stats1 Song statistics of the first time window
+    * @param stats2 Song statistics of the second time window
     */
     private void compareSongs(SongStatistics stats1, SongStatistics stats2){
         String song1 = stats1.getTopSong();
