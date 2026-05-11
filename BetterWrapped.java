@@ -191,7 +191,7 @@ public class BetterWrapped {
         for (Bucket bucket : buckets) {
             SongStatistics stats = new SongStatistics(bucket.getPlays());
 
-            System.out.println(bucket.getName() + "STATS");
+            System.out.println(bucket.getName() + " STATS");
             System.out.println(stats);
         }
     } 
