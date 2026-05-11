@@ -1,3 +1,4 @@
+package BetterWrappedProject;
 /**
  * Represents the metadata (artist, name, genre) for a given song.
  *

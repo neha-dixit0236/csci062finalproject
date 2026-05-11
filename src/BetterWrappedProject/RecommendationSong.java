@@ -1,3 +1,4 @@
+package BetterWrappedProject;
 /**
  * Represents a song that can be recommended to a user.
  *
