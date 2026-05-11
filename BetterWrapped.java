@@ -351,6 +351,16 @@ public class BetterWrapped {
     } //what is the difference between iswithindaterange and iswithinwindow?
 
 
+
+
+
+
+
+
+
+
+
+
     //////////////////////////////////////////////////////////
     // FEATURE 2: Detecting Outliers
     //////////////////////////////////////////////////////////
@@ -390,8 +400,17 @@ public class BetterWrapped {
     }
 
 
+
+
+
+
+
+
+
+
     //////////////////////////////////////////////////////////
-    //FEATURE 3 LAST FEATURE LAST FEATURE!!
+    //FEATURE 3: Personalized Recommendations Based on Genre
+    //////////
 
 
     /**
@@ -428,6 +447,10 @@ public class BetterWrapped {
 
 
 
+
+
+
+    
     /**
      * Main method to test all BetterWrapped features.
      * @param args command-line arguments (not used)
