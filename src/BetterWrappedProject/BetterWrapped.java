@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.time.LocalDate;
 
 /**
  * @author Neha Dixit
@@ -57,6 +58,14 @@ public class BetterWrapped {
         else{
             System.out.println("Not a valid time window.");
         }
+    }
+
+    /**
+     * INSERT JAVADOC HERE!!!!!
+     * @return allHistory
+     */
+    public List<KeyValuePair> getAllHistory() {
+        return allHistory;
     }
 
     /**
@@ -451,116 +460,110 @@ public class BetterWrapped {
      * Main method to test all BetterWrapped features.
      * @param args command-line arguments (not used)
      */
-    public static void main(String[] args) {
-        // 1. Create the instance
-        BetterWrapped myWrapped = new BetterWrapped("testScrobbles.csv");
-
-        // 2. Create sample test dates (Midterms on Sep 29, Break on Nov 24, and each semester starts at a reasonable time)
-        Timestamp testMidterm = Timestamp.valueOf(LocalDateTime.of(2023, 9, 29, 23, 59));
-        Timestamp testBreak = Timestamp.valueOf(LocalDateTime.of(2023, 11, 24, 23, 59));
-        Timestamp testSpringStart = Timestamp.valueOf(LocalDateTime.of(2023,1, 19, 23, 59));
-        Timestamp testSpringEnd = Timestamp.valueOf(LocalDateTime.of(2023,5, 15, 23, 59));
-        Timestamp testSummerStart = Timestamp.valueOf(LocalDateTime.of(2023,5, 16, 23, 59));
-        Timestamp testSummerEnd = Timestamp.valueOf(LocalDateTime.of(2023,8, 23, 23, 59));
-        Timestamp testFallStart = Timestamp.valueOf(LocalDateTime.of(2023,8, 24, 23, 59));
-        Timestamp testFallEnd = Timestamp.valueOf(LocalDateTime.of(2023,12, 11, 23, 59));
-
-        // 3. Run the test for FEATURE 1 - Listening Trend Analysis
-
-        // ----------WEEKDAY_VS_WEEKEND----------
-        System.out.println("Testing WEEKDAY_VS_WEEKEND for Feature 1:");
-        System.out.println("Both weekday and weekend are expected to have Dua Lipa as the top artist and Pop as the top genre");
-        System.out.println(".");
-        myWrapped.analyze("WEEKDAY_VS_WEEKEND", null, null, null, null, null);
-        System.out.println("---------");
-
-        // ----------ONE_SEMESTER----------
-        System.out.println("Testing ONE_SEMESTER for Feature 1:");
-        System.out.println("Those played on Sep 29 should be within the midterm window. Those played on Sep 30 should be within the normal days. Break should be empty");
-        System.out.println(".");
-        List<Timestamp> midtermDates = new ArrayList<>();
-        midtermDates.add(testMidterm);
-        List<Timestamp> breakDates = new ArrayList<>();
-        breakDates.add(testBreak);
-        myWrapped.analyze("ONE_SEMESTER", midtermDates, breakDates, null, null, null);
-        System.out.println("---------");
-
-        // ----------FULL_YEAR----------
-        System.out.println("Testing FULL_YEAR for Feature 1:");
-        System.out.println("All 26 plays should be within the fall semester window. Summer and spring should be empty");
-        System.out.println(".");
-        List<Timestamp> springDates = new ArrayList<>();
-        springDates.add(testSpringStart);
-        springDates.add(testSpringEnd);
-        List<Timestamp> summerDates = new ArrayList<>();
-        summerDates.add(testSummerStart);
-        summerDates.add(testSummerEnd);
-        List<Timestamp> fallDates = new ArrayList<>();
-        fallDates.add(testFallStart);
-        fallDates.add(testFallEnd);
-        myWrapped.analyze("FULL_YEAR", null, null, springDates, summerDates, fallDates);
-        System.out.println("---------");
-
-        // 4. Run the test for FEATURE 2 - Detecting Outliers
-
-        // ----------WEEKDAY_VS_WEEKEND----------
-        System.out.println("Testing WEEKDAY_VS_WEEKEND for Feature 2:");
-        myWrapped.detectOutliersByWeekdayWeekend();
-
-        // ----------ONE_SEMESTER----------
-        System.out.println("Testing ONE_SEMESTER for Feature 2:");
-        myWrapped.detectOutliersBySemester(midtermDates, breakDates);
-
-        // ----------FULL_YEAR----------
-        System.out.println("Testing FULL_YEAR for Feature 2:");
-        myWrapped.detectOutliersByYear(springDates, summerDates, fallDates);
-
-
-
-        // 5. Running tests for FEATURE 3 - Focused Recommendations Based on Listening History
-
-        System.out.println("Testing FEATURE 3:");
-
-        myWrapped.recommendByWeekdayWeekend("MasterListofSongs(Feature3).csv");
-
-        myWrapped.recommendBySemester(midtermDates, breakDates, "MasterListofSongs(Feature3).csv");
-        
-        myWrapped.recommendByYear(springDates, summerDates, fallDates,"MasterListofSongs(Feature3).csv");
-
-        // 6. Asking for User Input
+    public static void main(String[] args){
         Scanner scanner = new Scanner(System.in);
-        System.out.println("\n=========================================");
+
+        System.out.println("=========================================");
         System.out.println("Welcome to Better Wrapped Interactive!");
         System.out.println("=========================================");
+
         
-        System.out.print("Please enter the path to your listening history CSV file (e.g., testScrobbles.csv): ");
-        String userCsv = scanner.nextLine().trim();
-        BetterWrapped userWrapped = new BetterWrapped(userCsv);
-        
-        System.out.print("What time window would you like to analyze? (WEEKDAY_VS_WEEKEND, ONE_SEMESTER, FULL_YEAR): ");
-        String userWindow = scanner.nextLine().trim().toUpperCase();
-        
-        System.out.print("Please enter the path to the recommendations dataset (e.g., MasterListofSongs(Feature3).csv): ");
-        String userRecs = scanner.nextLine().trim();
-        
-        System.out.println("\n--- Generating your Better Wrapped ---");
-        if (userWindow.equals("WEEKDAY_VS_WEEKEND")) {
-            userWrapped.analyze(userWindow, null, null, null, null, null);
-            userWrapped.detectOutliersByWeekdayWeekend();
-            userWrapped.recommendByWeekdayWeekend(userRecs);
-        } else if (userWindow.equals("ONE_SEMESTER")) {
-            userWrapped.analyze(userWindow, midtermDates, breakDates, null, null, null);
-            userWrapped.detectOutliersBySemester(midtermDates, breakDates);
-            userWrapped.recommendBySemester(midtermDates, breakDates, userRecs);
-        } else if (userWindow.equals("FULL_YEAR")) {
-            userWrapped.analyze(userWindow, null, null, springDates, summerDates, fallDates);
-            userWrapped.detectOutliersByYear(springDates, summerDates, fallDates);
-            userWrapped.recommendByYear(springDates, summerDates, fallDates, userRecs);
-        } else {
-            System.out.println("Invalid time window. Please run the program again.");
+
+        //Creating our recommendation file variable
+        String recommendationFile = "MasterListofSongs(Feature3).csv";
+        String userWindow = "";
+
+        //Asking the user for a valid time window
+        while (true){
+            System.out.print("What time window would you like to analyze? (WEEKDAY_VS_WEEKEND, ONE_SEMESTER, FULL_YEAR): ");
+            userWindow = scanner.nextLine().trim().toUpperCase();
+
+            if (userWindow.equals("WEEKDAY_VS_WEEKEND") || userWindow.equals("ONE_SEMESTER") || userWindow.equals("FULL_YEAR")) {
+                break;
+            }
+            else{
+                System.out.println("This is not a valid time window. Please type one of the following: WEEKDAY_VS_WEEKEND, ONE_SEMESTER, FULL_YEAR");
+            }
         }
+
+        //Creating variables for our date lists - weekend and weekday?
+        List<Timestamp> midtermDates = new ArrayList<>();
+        List<Timestamp> breakDates = new ArrayList<>();
+        List<Timestamp> springDates = new ArrayList<>();
+        List<Timestamp> summerDates = new ArrayList<>();
+        List<Timestamp> fallDates = new ArrayList<>();
+
+        //Asking for Midterm and Break info if time window selected was "ONE_SEMESTER"
+        //We are assuming that the listening history CSV is already in the folder
+        if (userWindow.equals("ONE_SEMESTER")) {
+            BetterWrapped userWrapped = new BetterWrapped("ScrobblesForOneSemester.csv"); //so would i just change the name here if i'm assuming the user already has their csv uploaded properly?
+
+            //figuring out the year
+            int detectedYear = userWrapped.getAllHistory().get(0).getTimeStamp().toLocalDateTime().getYear();
+            System.out.println("\nDetected listening history year: " + detectedYear);
+            
+            while (true){
+                try{
+                    System.out.println("\nEnter your midterm/final dates " + "(YYYY-MM-DD separated by commas)");
+                    System.out.println("Example: " + "2023-09-29, 2023-10-30");
+
+                    String input = scanner.nextLine().trim();
+                    String[] dates = input.split(",");
+                    midtermDates.clear();
+
+                    for (String date : dates) {
+                        LocalDate parsedDate = LocalDate.parse(date.trim());
+
+                        Timestamp timestamp = Timestamp.valueOf(parsedDate.atTime(23, 59));
+
+                        midtermDates.add(timestamp);
+                    }
+
+                    break;
+                }
+                catch (Exception e){
+                    System.out.println("This is an invalid format. Please use YYYY-MM-DD when inputting midterm dates");
+                }
+            }
+
+            while (true){
+                try{
+                    System.out.println("Enter your academic break dates (start and end date) in the format YYYY-MM-DD:");
+                    System.out.println( "Example: 2023-11-20, 2023-11-27");
+
+                    String input = scanner.nextLine().trim();
+                    String[] dates = input.split(",");
+
+                    //Checking to see if there is both a start and an end date
+                    if (dates.length % 2 != 0) { //should it be mod 2 because if there's 4 dates then that's two breaks which is still completely valid
+                        throw new IllegalArgumentException();
+                    }
+
+                    breakDates.clear();
+
+                    for (String date : dates) {
+                        LocalDate parsedDate = LocalDate.parse(date.trim());
+
+                        Timestamp timestamp = Timestamp.valueOf(parsedDate.atTime(23, 59));
+                        breakDates.add(timestamp);
+                    }
+
+                    break;
+                }
+                catch (Exception e){
+
+                }
+            }
         
-        scanner.close();
-    }   
+        
+
+
+        
+
+       
+    }
+
+
+    }
         
 } 
