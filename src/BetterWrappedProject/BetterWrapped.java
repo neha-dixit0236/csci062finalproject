@@ -319,15 +319,26 @@ public class BetterWrapped {
      * @return true if the song was played within the period of time
      */
     private boolean isWithinDateRange (Timestamp songTime, List<Timestamp> importantDates) {
-        if (importantDates == null || importantDates.isEmpty()) {
+        if (importantDates == null || importantDates.size() < 2) {
             return false;
         }
 
-        Timestamp start = Collections.min(importantDates);
-        Timestamp end = Collections.max(importantDates);
+        for (int i = 0; i < importantDates.size() - 1; i +=2){
+            Timestamp start = importantDates.get(i);
+            Timestamp end = importantDates.get(i+1);
 
-        return !songTime.before(start) && !songTime.after(end);
+            if (!songTime.before(start) && !songTime.after(end)){
+                return true;
+            }
+        }
+
+        return false;
     }
+
+        
+
+
+
 
     /**
      * Checks if a song is played within n days before a deadline. For midterms.
@@ -452,25 +463,20 @@ public class BetterWrapped {
 
 
 
-
-
-
-    
     /**
      * Main method to test all BetterWrapped features.
      * @param args command-line arguments (not used)
      */
     public static void main(String[] args){
         Scanner scanner = new Scanner(System.in);
+        BetterWrapped userWrapped = null;
 
         System.out.println("=========================================");
         System.out.println("Welcome to Better Wrapped Interactive!");
         System.out.println("=========================================");
 
-        
-
         //Creating our recommendation file variable
-        String recommendationFile = "MasterListofSongs(Feature3).csv";
+        String recommendationFile = "src/BetterWrappedProject/MasterListofSongs(Feature3).csv";
         String userWindow = "";
 
         //Asking the user for a valid time window
@@ -482,88 +488,191 @@ public class BetterWrapped {
                 break;
             }
             else{
-                System.out.println("This is not a valid time window. Please type one of the following: WEEKDAY_VS_WEEKEND, ONE_SEMESTER, FULL_YEAR");
+                System.out.println("This is not a valid time window. Please type one of the following: WEEKDAY_VS_WEEKEND, ONE_SEMESTER, FULL_YEAR ");
             }
         }
 
-        //Creating variables for our date lists - weekend and weekday?
+        //Creating variables for our date lists
         List<Timestamp> midtermDates = new ArrayList<>();
         List<Timestamp> breakDates = new ArrayList<>();
         List<Timestamp> springDates = new ArrayList<>();
         List<Timestamp> summerDates = new ArrayList<>();
         List<Timestamp> fallDates = new ArrayList<>();
 
-        //Asking for Midterm and Break info if time window selected was "ONE_SEMESTER"
-        //We are assuming that the listening history CSV is already in the folder
+
+        // ===================================
+        // WEEKDAY_VS_WEEKEND
+        // ===================================
+        if (userWindow.equals("WEEKDAY_VS_WEEKEND")){
+            userWrapped = new BetterWrapped("src/BetterWrappedProject/ScrobblesForOneWeek.csv");
+        }
+
+        // ===================================
+        // ONE_SEMESTER -
+        // ===================================
         if (userWindow.equals("ONE_SEMESTER")) {
-            BetterWrapped userWrapped = new BetterWrapped("ScrobblesForOneSemester.csv"); //so would i just change the name here if i'm assuming the user already has their csv uploaded properly?
+            userWrapped = new BetterWrapped("src/BetterWrappedProject/ScrobblesForOneSemester.csv"); //so would i just change the name here if i'm assuming the user already has their csv uploaded properly?
 
             //figuring out the year
             int detectedYear = userWrapped.getAllHistory().get(0).getTimeStamp().toLocalDateTime().getYear();
             System.out.println("\nDetected listening history year: " + detectedYear);
             
-            while (true){
-                try{
-                    System.out.println("\nEnter your midterm/final dates " + "(YYYY-MM-DD separated by commas)");
-                    System.out.println("Example: " + "2023-09-29, 2023-10-30");
+            //creating the midterm/final list
+            int numMidterms = 0;
 
-                    String input = scanner.nextLine().trim();
-                    String[] dates = input.split(",");
-                    midtermDates.clear();
+            while (true) {
+                try {
+                    System.out.print( "\nHow many midterms/finals would you like to enter? ");
+                    numMidterms = Integer.parseInt(scanner.nextLine().trim());
+                
+                    if (numMidterms >= 0) {
+                        break;
+                    }
 
-                    for (String date : dates) {
-                        LocalDate parsedDate = LocalDate.parse(date.trim());
+                } 
+                catch (Exception e) {
+                    // ignore
+                }
 
-                        Timestamp timestamp = Timestamp.valueOf(parsedDate.atTime(23, 59));
+                System.out.println("Please enter a valid number. ");
+            }
 
+            for (int i = 1; i <= numMidterms; i++) {
+                while (true) {
+                    try {
+                        System.out.print("Enter midterm/final #" + i + " date (MM-DD): ");
+
+                        String input = scanner.nextLine().trim();
+                        String[] parts = input.split("-");
+                            
+                        int month = Integer.parseInt(parts[0]);
+                        int day = Integer.parseInt(parts[1]);
+                            
+                        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.of(detectedYear, month, day, 23, 59));
                         midtermDates.add(timestamp);
+                        break;
+                    } 
+                    catch (Exception e) {
+                        System.out.println("Invalid format. Please use MM-DD. Example: 09-29 ");
                     }
-
-                    break;
-                }
-                catch (Exception e){
-                    System.out.println("This is an invalid format. Please use YYYY-MM-DD when inputting midterm dates");
                 }
             }
 
-            while (true){
-                try{
-                    System.out.println("Enter your academic break dates (start and end date) in the format YYYY-MM-DD:");
-                    System.out.println( "Example: 2023-11-20, 2023-11-27");
 
-                    String input = scanner.nextLine().trim();
-                    String[] dates = input.split(",");
+            // --------------------------
+            // Multiple breaks
+            // --------------------------
 
-                    //Checking to see if there is both a start and an end date
-                    if (dates.length % 2 != 0) { //should it be mod 2 because if there's 4 dates then that's two breaks which is still completely valid
-                        throw new IllegalArgumentException();
+            int numBreaks = 0;
+
+            while (true) {
+                try {
+
+                    System.out.println("How many breaks do you have? ");
+
+                    numBreaks = Integer.parseInt(scanner.nextLine().trim());
+
+                    if (numBreaks >= 0) {
+                        break;
                     }
-
-                    breakDates.clear();
-
-                    for (String date : dates) {
-                        LocalDate parsedDate = LocalDate.parse(date.trim());
-
-                        Timestamp timestamp = Timestamp.valueOf(parsedDate.atTime(23, 59));
-                        breakDates.add(timestamp);
-                    }
-
-                    break;
+                } 
+                catch (Exception e) {
+                    //nothing happens
                 }
-                catch (Exception e){
 
+                System.out.println("Please enter a valid number. ");
+            }
+
+            // enter each break
+            for (int i = 1; i <= numBreaks; i++) {
+                while (true) {
+                    try {
+                        System.out.print( "\nEnter BREAK #" + i + " START date (MM-DD): ");
+
+                        String startInput = scanner.nextLine().trim();
+
+                        String[] startParts = startInput.split("-");
+                            
+
+                        int startMonth = Integer.parseInt(startParts[0]);
+
+                        int startDay = Integer.parseInt(startParts[1]);
+
+                        System.out.print("Enter BREAK #" + i + " END date (MM-DD): ");
+
+                        String endInput = scanner.nextLine().trim();
+                            
+
+                        String[] endParts = endInput.split("-");
+                            
+
+                        int endMonth = Integer.parseInt(endParts[0]);
+                        int endDay = Integer.parseInt(endParts[1]);
+
+                        Timestamp breakStart = Timestamp.valueOf(LocalDateTime.of(detectedYear, startMonth, startDay, 0, 0));
+
+                        Timestamp breakEnd = Timestamp.valueOf(LocalDateTime.of(detectedYear, endMonth, endDay, 23, 59));
+                        
+                        // add as pair
+                        breakDates.add(breakStart);
+                        breakDates.add(breakEnd);
+
+                        break;
+
+                    } 
+                    catch (Exception e) {
+
+                        System.out.println("Invalid format. Please use MM-DD. Example: 11-20 ");
+                    }
                 }
             }
-        
-        
+        }
 
 
-        
 
-       
-    }
+        // ===================================
+        // FULL YEAR -
+        // ===================================
+
+        if (userWindow.equals("FULL_YEAR")) {
+            userWrapped = new BetterWrapped("src/BetterWrappedProject/ScrobblesForOneYear.csv");
+            int detectedYear = userWrapped.getAllHistory().get(0).getTimeStamp().toLocalDateTime().getYear();
+            
+            springDates.add(Timestamp.valueOf(LocalDateTime.of(detectedYear, 1, 1, 0, 0)));
+            springDates.add(Timestamp.valueOf(LocalDateTime.of(detectedYear, 4, 30, 23, 59)));
+            
+            summerDates.add(Timestamp.valueOf(LocalDateTime.of(detectedYear, 5, 1, 0, 0)));
+            summerDates.add(Timestamp.valueOf(LocalDateTime.of(detectedYear, 8, 31, 23, 59)));
+
+            fallDates.add(Timestamp.valueOf( LocalDateTime.of(detectedYear, 9, 1, 0, 0)));
+            fallDates.add(Timestamp.valueOf(LocalDateTime.of(detectedYear, 12, 31, 23, 59)));
+        }
 
 
-    }
-        
+
+        // ===================================
+        // Generate Better Wrapped
+        // ===================================
+
+        System.out.println("\nGenerating your Better Wrapped...");
+
+        if (userWindow.equals("WEEKDAY_VS_WEEKEND")) {
+            userWrapped.analyze(userWindow, null, null, null, null, null);
+            userWrapped.detectOutliersByWeekdayWeekend();
+            userWrapped.recommendByWeekdayWeekend(recommendationFile);
+        } 
+        else if (userWindow.equals("ONE_SEMESTER")) {
+            userWrapped.analyze(userWindow, midtermDates, breakDates, null, null, null);
+
+            userWrapped.detectOutliersBySemester(midtermDates, breakDates);
+            userWrapped.recommendBySemester(midtermDates, breakDates, recommendationFile);
+        } 
+        else {
+            userWrapped.analyze(userWindow, null, null, springDates, summerDates, fallDates);
+            userWrapped.detectOutliersByYear(springDates, summerDates, fallDates);
+            userWrapped.recommendByYear(springDates, summerDates, fallDates, recommendationFile);
+        }
+
+        scanner.close();
+    }   
 } 
