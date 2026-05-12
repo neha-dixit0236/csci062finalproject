@@ -297,14 +297,8 @@ public class BetterWrapped {
     }
 
 
-
-
-
-
-
-
     //////////////////////////////////////////////////////////
-    // helpers to determine the date range
+    // Feature 1 helpers to determine the date range
     //////////////////////////////////////////////////////////
 
     /**
@@ -350,7 +344,7 @@ public class BetterWrapped {
         }
 
         return false;
-    } //what is the difference between iswithindaterange and iswithinwindow?
+    }
 
 
 
@@ -412,7 +406,7 @@ public class BetterWrapped {
 
     //////////////////////////////////////////////////////////
     //FEATURE 3: Personalized Recommendations Based on Genre
-    //////////
+    //////////////////////////////////////////////////////////
 
 
     /**
