@@ -37,8 +37,8 @@ public class MusicDataLoader {
             while ((line = reader.readLine()) != null){
 
                 // Use a regex to split by commas but ignore commas inside quotes
-                // This is important because your date "30 Sep 2023, 0:31" has a comma in it!
-                // THANKS TO LLM 
+                // This is important because "30 Sep 2023, 0:31" has a comma in it!
+                // THANKS TO LLMs
                 String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
 
                 //creating the KeyValuePair and SongInfo variables

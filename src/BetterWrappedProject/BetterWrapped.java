@@ -206,7 +206,6 @@ public class BetterWrapped {
         }
     } 
 
-    //////////////////////////////////////////////////////////
     //FEATURE 1 COMPARISON HELPERS
 
     /**
@@ -311,9 +310,7 @@ public class BetterWrapped {
     }
 
 
-    //////////////////////////////////////////////////////////
     // Feature 1 helpers to determine the date range
-    //////////////////////////////////////////////////////////
 
     /**
      * Checks if a song is played within the inclusive range from the earliest to the latest date in importantDates. 
@@ -433,7 +430,7 @@ public class BetterWrapped {
 
 
 
-    //helper method for feature 3
+    //Feature 3 helper method
     private void runRecommendations(List<Bucket> buckets, String recFile){
         List<RecommendationSong> recommendationSongs = RecommendationLoader.loadSongs(recFile);
         RecommendationEngine recEngine = new RecommendationEngine(recommendationSongs, allHistory);
@@ -486,17 +483,12 @@ public class BetterWrapped {
         List<Timestamp> summerDates = new ArrayList<>();
         List<Timestamp> fallDates = new ArrayList<>();
 
-
-        // ===================================
         // WEEKDAY_VS_WEEKEND
-        // ===================================
         if (userWindow.equals("WEEKDAY_VS_WEEKEND")){
             userWrapped = new BetterWrapped("src/BetterWrappedProject/ScrobblesForOneWeek.csv");
         }
 
-        // ===================================
-        // ONE_SEMESTER -
-        // ===================================
+        // ONE_SEMESTER 
         if (userWindow.equals("ONE_SEMESTER")) {
             userWrapped = new BetterWrapped("src/BetterWrappedProject/ScrobblesForOneSemester.csv"); //so would i just change the name here if i'm assuming the user already has their csv uploaded properly?
 
@@ -658,10 +650,7 @@ public class BetterWrapped {
         }
 
 
-
-        // ===================================
-        // FULL YEAR -
-        // ===================================
+        // FULL YEAR 
 
         if (userWindow.equals("FULL_YEAR")) {
             userWrapped = new BetterWrapped("src/BetterWrappedProject/ScrobblesForOneYear.csv");
