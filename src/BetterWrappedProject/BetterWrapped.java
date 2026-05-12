@@ -127,11 +127,11 @@ public class BetterWrapped {
 
         for (KeyValuePair entry : allHistory){
             Timestamp songTime = entry.getTimeStamp();
-            if (isWithinWindow(songTime, midtermDates, 5)){
-                midterm.addPlay(entry);
-            }
-            else if (isWithinDateRange(songTime, breakDates)){
+            if (isWithinDateRange(songTime, breakDates)){
                 academicBreak.addPlay(entry);
+            }
+            else if (isWithinWindow(songTime, midtermDates, 5)){
+                midterm.addPlay(entry);
             }
             else{
                 normal.addPlay(entry);
@@ -201,7 +201,7 @@ public class BetterWrapped {
         for (Bucket bucket : buckets) {
             SongStatistics stats = new SongStatistics(bucket.getPlays());
 
-            System.out.println(bucket.getName() + " STATS");
+            System.out.println("=== " + bucket.getName() + " STATS ===");
             System.out.println(stats);
         }
     } 
@@ -214,7 +214,7 @@ public class BetterWrapped {
     * @param buckets list of categorized buckets
     */
     private void compareBuckets(List<Bucket> buckets){
-        System.out.println("Listening Trend Comparison:");
+        System.out.println("=== Listening Trend Comparison ===");
 
         for (int i = 0; i < buckets.size(); i++){
             for (int j = i + 1; j < buckets.size(); j++){
@@ -237,11 +237,11 @@ public class BetterWrapped {
 
         SongStatistics stats2 = new SongStatistics(second.getPlays());
 
-        System.out.println(first.getName() + " vs " + second.getName());
+        System.out.println("\n>> " + first.getName() + " vs " + second.getName());
 
-        compareGenres(stats1, stats2);
-        compareArtists(stats1, stats2);
-        compareSongs(stats1, stats2);
+        compareGenres(stats1, stats2, first.getName(), second.getName());
+        compareArtists(stats1, stats2, first.getName(), second.getName());
+        compareSongs(stats1, stats2, first.getName(), second.getName());
 
         System.out.println("---------");
     }
@@ -250,8 +250,10 @@ public class BetterWrapped {
     * Compare the top genres between two listening time windows
     * @param stats1 Song statistics of the first time window
     * @param stats2 Song statistics of the second time window
+    * @param window1 The name of the first time window
+    * @param window2 The name of the second time window
     */
-    private void compareGenres(SongStatistics stats1, SongStatistics stats2){
+    private void compareGenres(SongStatistics stats1, SongStatistics stats2, String window1, String window2){
         String genre1 = stats1.getTopGenre();
         String genre2 = stats2.getTopGenre();
         if (genre1.equals("None") || genre2.equals("None")){
@@ -261,7 +263,7 @@ public class BetterWrapped {
             System.out.println("Your top genre stayed consistent. Your top genre was: " + genre1);
         }
         else{
-            System.out.println("Your top genre shifted from " + genre1 + " to " + genre2);
+            System.out.println("Your top genre shifted from " + genre1 + " during " + window1 + " to " + genre2 + " during " + window2);
         }
     }
 
@@ -269,8 +271,10 @@ public class BetterWrapped {
     * Compare the top artists between two listening time windows
     * @param stats1 Song statistics of the first time window
     * @param stats2 Song statistics of the second time window
+    * @param window1 The name of the first time window
+    * @param window2 The name of the second time window
     */
-    private void compareArtists(SongStatistics stats1, SongStatistics stats2){
+    private void compareArtists(SongStatistics stats1, SongStatistics stats2, String window1, String window2){
         String artist1 = stats1.getTopArtist();
         String artist2 = stats2.getTopArtist();
 
@@ -281,7 +285,7 @@ public class BetterWrapped {
             System.out.println("Favorite artist stayed the same: " + artist1);
         }
         else{
-            System.out.println("Favorite artist changed from " + artist1 + " to " + artist2);
+            System.out.println("Favorite artist changed from " + artist1 + " during " + window1 + " to " + artist2 + " during " + window2);
         }
     }
 
@@ -289,8 +293,10 @@ public class BetterWrapped {
     * Compare the top songs between the two listening windows.
     * @param stats1 Song statistics of the first time window
     * @param stats2 Song statistics of the second time window
+    * @param window1 The name of the first time window
+    * @param window2 The name of the second time window
     */
-    private void compareSongs(SongStatistics stats1, SongStatistics stats2){
+    private void compareSongs(SongStatistics stats1, SongStatistics stats2, String window1, String window2){
         String song1 = stats1.getTopSong();
         String song2 = stats2.getTopSong();
         if (song1.equals("None") || song2.equals("None")){
@@ -300,7 +306,7 @@ public class BetterWrapped {
             System.out.println("Top song stayed consistent: " + song1);
         }
         else{
-            System.out.println("Top song changed from " + song1 + " to " + song2);
+            System.out.println("Top song changed from " + song1 + " during " + window1 + " to " + song2 + " during " + window2);
         }
     }
 
@@ -334,10 +340,6 @@ public class BetterWrapped {
         return false;
     }
 
-        
-
-
-
 
     /**
      * Checks if a song is played within n days before a deadline. For midterms.
@@ -364,17 +366,6 @@ public class BetterWrapped {
 
         return false;
     }
-
-
-
-
-
-
-
-
-
-
-
 
     //////////////////////////////////////////////////////////
     // FEATURE 2: Detecting Outliers
@@ -413,14 +404,6 @@ public class BetterWrapped {
         List<OutlierDay> outliers = detect.findOutliers();
         detect.printOutliers(outliers);
     }
-
-
-
-
-
-
-
-
 
 
     //////////////////////////////////////////////////////////
@@ -483,7 +466,12 @@ public class BetterWrapped {
             System.out.print("What time window would you like to analyze? (WEEKDAY_VS_WEEKEND, ONE_SEMESTER, FULL_YEAR): ");
             userWindow = scanner.nextLine().trim().toUpperCase();
 
-            if (userWindow.equals("WEEKDAY_VS_WEEKEND") || userWindow.equals("ONE_SEMESTER") || userWindow.equals("FULL_YEAR")) {
+            if (userWindow.equals("WEEKDAY_VS_WEEKEND") || userWindow.equals("ONE_SEMESTER")) {
+                break;
+            }
+            else if (userWindow.equals("FULL_YEAR")) {
+                System.out.println("\nNote: For FULL_YEAR analysis, we consider January-April to be Spring Semester, May-August to be Summer Break, and September-December to be Fall Semester.");
+                System.out.println("Please ensure your listening history is from January to December of the same year (e.g., not from September of one year to September of another).");
                 break;
             }
             else{

@@ -35,7 +35,7 @@ public class RecommendationEngine {
             List<RecommendationSong> recommendations = new ArrayList<>();
 
             if (plays == null || plays.isEmpty()){
-                result.put(bucket.getName(), recommendations);
+                //If a bucket has no listening history, it will simply be skipped
                 continue;
             }
 
@@ -88,12 +88,13 @@ public class RecommendationEngine {
      * @param recommendations the map of recommended songs per bucket
      */
     public void printRecommendations(Map<String, List<RecommendationSong>> recommendations){
+        System.out.println("\n=== Song Recommendations ===");
         for (String bucketName : recommendations.keySet()){
-            System.out.println("Based on your top genre in the category " + bucketName + ", we think you'll like these songs:");
+            System.out.println(">> " + bucketName + " (Based on your top genre):");
             List<RecommendationSong> songs = recommendations.get(bucketName);
 
             if (songs == null || songs.isEmpty()){
-                System.out.println("Sorry, we have no recommendations for you.");
+                System.out.println("Sorry, we have no recommendations for you. This means either you've listened to all the songs in our dataset or your top genre is not one we carry in our recommendation dataset.");
                 continue;
             }
 

@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collections;
+import java.util.Comparator;
 
 
 /**
@@ -90,23 +92,41 @@ public class OutlierDetector {
      * @param outliers the list returned by findOutlier method
      */
     public void printOutliers (List<OutlierDay> outliers) {
-        System.out.println("Outlier Days:");
+        System.out.println("\n=== Outlier Days ===");
 
         if (outliers == null || outliers.isEmpty()) {
             System.out.println("Did not detect any outlier days");
             return;
         }
 
+        // Sort outliers by bucket name, then by play count (descending) to get the "top" outliers
+        Collections.sort(outliers, new Comparator<OutlierDay>() {
+            @Override
+            public int compare(OutlierDay o1, OutlierDay o2) {
+                int bucketCmp = o1.getBucketName().compareTo(o2.getBucketName());
+                if (bucketCmp != 0) {
+                    return bucketCmp;
+                }
+                return Integer.compare(o2.getPlayCount(), o1.getPlayCount());
+            }
+        });
+
         // group printed things by bucket
         String currentBucket = null;
+        int count = 0;
         for (OutlierDay outlier : outliers) {
 
             if (!outlier.getBucketName().equals(currentBucket)) {
                 currentBucket = outlier.getBucketName();
-                System.out.println("-----" +currentBucket + "-----");
+                System.out.println("\n--- " + currentBucket + " ---");
+                count = 0;
             }
 
-            System.out.println(outlier);
+            // Limit to the top 5 outliers per bucket
+            if (count < 5) {
+                System.out.println(outlier);
+                count++;
+            }
         }
 
     }

@@ -81,7 +81,7 @@ public class OutlierDay {
      */
     @Override
     public String toString() {
-        return date.toString() + ": played " + dayGenre + " " +
+        return "  - " + date.toString() + ": played " + dayGenre + " " +
         playCount + " times, but usually " + baselineGenre + " during " + bucketName;
     }
 

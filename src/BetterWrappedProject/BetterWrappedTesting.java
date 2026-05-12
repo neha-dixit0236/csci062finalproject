@@ -10,9 +10,11 @@ public class BetterWrappedTesting {
         // 1. Create the instance
         BetterWrapped myWrapped = new BetterWrapped("testScrobbles.csv");
 
-        // 2. Create sample test dates (Midterms on Sep 29, Break on Nov 24, and each semester starts at a reasonable time)
+        // 2. Create sample test dates (Break and Midterm overlap to test priority)
         Timestamp testMidterm = Timestamp.valueOf(LocalDateTime.of(2023, 9, 29, 23, 59));
-        Timestamp testBreak = Timestamp.valueOf(LocalDateTime.of(2023, 11, 24, 23, 59));
+        Timestamp testMidtermOverlap = Timestamp.valueOf(LocalDateTime.of(2023, 11, 24, 23, 59));
+        Timestamp testBreakStart = Timestamp.valueOf(LocalDateTime.of(2023, 11, 20, 0, 0));
+        Timestamp testBreakEnd = Timestamp.valueOf(LocalDateTime.of(2023, 11, 26, 23, 59));
         Timestamp testSpringStart = Timestamp.valueOf(LocalDateTime.of(2023,1, 19, 23, 59));
         Timestamp testSpringEnd = Timestamp.valueOf(LocalDateTime.of(2023,5, 15, 23, 59));
         Timestamp testSummerStart = Timestamp.valueOf(LocalDateTime.of(2023,5, 16, 23, 59));
@@ -30,13 +32,16 @@ public class BetterWrappedTesting {
         System.out.println("---------");
 
         // ----------ONE_SEMESTER----------
-        System.out.println("Testing ONE_SEMESTER for Feature 1:");
-        System.out.println("Those played on Sep 29 should be within the midterm window. Those played on Sep 30 should be within the normal days. Break should be empty");
+        System.out.println("Testing ONE_SEMESTER for Feature 1 (Checking Overlap Priority):");
+        System.out.println("There is a break from Nov 20-26, and an overlapping midterm on Nov 24.");
+        System.out.println("Break takes priority over midterms, so songs played during this overlap will fall into the BREAK bucket.");
         System.out.println(".");
         List<Timestamp> midtermDates = new ArrayList<>();
         midtermDates.add(testMidterm);
+        midtermDates.add(testMidtermOverlap);
         List<Timestamp> breakDates = new ArrayList<>();
-        breakDates.add(testBreak);
+        breakDates.add(testBreakStart);
+        breakDates.add(testBreakEnd);
         myWrapped.analyze("ONE_SEMESTER", midtermDates, breakDates, null, null, null);
         System.out.println("---------");
 
@@ -59,7 +64,8 @@ public class BetterWrappedTesting {
         // 4. Run the test for FEATURE 2 - Detecting Outliers
 
         // ----------WEEKDAY_VS_WEEKEND----------
-        System.out.println("Testing WEEKDAY_VS_WEEKEND for Feature 2:");
+        System.out.println("Testing WEEKDAY_VS_WEEKEND for Feature 2 (Checking Top 5 Cap):");
+        System.out.println("Notice that the outlier list is capped at a maximum of 5 days per bucket.");
         myWrapped.detectOutliersByWeekdayWeekend();
 
         // ----------ONE_SEMESTER----------
@@ -74,7 +80,8 @@ public class BetterWrappedTesting {
 
         // 5. Running tests for FEATURE 3 - Focused Recommendations Based on Listening History
 
-        System.out.println("Testing FEATURE 3:");
+        System.out.println("Testing FEATURE 3 (Recommendations):");
+        System.out.println("Recommendations will be shuffled on each run. Empty buckets will be skipped entirely instead of printing the 'Sorry' message.");
 
         myWrapped.recommendByWeekdayWeekend("MasterListofSongs(Feature3).csv");
 

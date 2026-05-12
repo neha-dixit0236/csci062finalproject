@@ -56,6 +56,6 @@ public class RecommendationSong {
      */
     @Override
     public String toString() {
-        return songName + " by " + artist + " (" + genre + ")";
+        return "  - " + songName + " by " + artist + " (" + genre + ")";
     }
 }
