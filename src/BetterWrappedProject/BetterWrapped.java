@@ -501,9 +501,19 @@ public class BetterWrapped {
             userWrapped = new BetterWrapped("src/BetterWrappedProject/ScrobblesForOneSemester.csv"); //so would i just change the name here if i'm assuming the user already has their csv uploaded properly?
 
             //figuring out the year
-            int detectedYear = userWrapped.getAllHistory().get(0).getTimeStamp().toLocalDateTime().getYear();
+            List<KeyValuePair> history = userWrapped.getAllHistory();
+            int detectedYear = history.get(0).getTimeStamp().toLocalDateTime().getYear();
             System.out.println("\nDetected listening history year: " + detectedYear);
             
+            // Find min/max dates to validate user input against the semester's actual data
+            LocalDateTime minDate = history.get(0).getTimeStamp().toLocalDateTime();
+            LocalDateTime maxDate = history.get(0).getTimeStamp().toLocalDateTime();
+            for (KeyValuePair entry : history) {
+                LocalDateTime curr = entry.getTimeStamp().toLocalDateTime();
+                if (curr.isBefore(minDate)) minDate = curr;
+                if (curr.isAfter(maxDate)) maxDate = curr;
+            }
+
             //creating the midterm/final list
             int numMidterms = 0;
 
@@ -535,7 +545,14 @@ public class BetterWrapped {
                         int month = Integer.parseInt(parts[0]);
                         int day = Integer.parseInt(parts[1]);
                             
-                        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.of(detectedYear, month, day, 23, 59));
+                        LocalDateTime enteredDate = LocalDateTime.of(detectedYear, month, day, 23, 59);
+                        
+                        if (enteredDate.isBefore(minDate.withHour(0).withMinute(0)) || enteredDate.isAfter(maxDate.withHour(23).withMinute(59))) {
+                            System.out.println("This date falls outside your semester's listening history (" + minDate.getMonthValue() + "-" + minDate.getDayOfMonth() + " to " + maxDate.getMonthValue() + "-" + maxDate.getDayOfMonth() + "). Please enter a valid date.");
+                            continue;
+                        }
+                        
+                        Timestamp timestamp = Timestamp.valueOf(enteredDate);
                         midtermDates.add(timestamp);
                         break;
                     } 
@@ -596,9 +613,34 @@ public class BetterWrapped {
                         int endMonth = Integer.parseInt(endParts[0]);
                         int endDay = Integer.parseInt(endParts[1]);
 
-                        Timestamp breakStart = Timestamp.valueOf(LocalDateTime.of(detectedYear, startMonth, startDay, 0, 0));
+                        LocalDateTime enteredStart = LocalDateTime.of(detectedYear, startMonth, startDay, 0, 0);
+                        LocalDateTime enteredEnd = LocalDateTime.of(detectedYear, endMonth, endDay, 23, 59);
 
-                        Timestamp breakEnd = Timestamp.valueOf(LocalDateTime.of(detectedYear, endMonth, endDay, 23, 59));
+                        if (enteredStart.isBefore(minDate.withHour(0).withMinute(0)) || enteredEnd.isAfter(maxDate.withHour(23).withMinute(59))) {
+                            System.out.println("These dates fall outside your semester's listening history (" + minDate.getMonthValue() + "-" + minDate.getDayOfMonth() + " to " + maxDate.getMonthValue() + "-" + maxDate.getDayOfMonth() + "). Please enter valid dates.");
+                            continue;
+                        }
+
+                        if (enteredEnd.isBefore(enteredStart)) {
+                            System.out.println("End date cannot be before start date. Please try again.");
+                            continue;
+                        }
+                        
+                        boolean duplicate = false;
+                        for (Timestamp midterm : midtermDates) {
+                            LocalDateTime mt = midterm.toLocalDateTime();
+                            if (mt.toLocalDate().isEqual(enteredStart.toLocalDate()) || mt.toLocalDate().isEqual(enteredEnd.toLocalDate())) {
+                                duplicate = true;
+                                break;
+                            }
+                        }
+                        if (duplicate) {
+                            System.out.println("You can't have duplicate dates. A break date cannot be the same as a midterm date. Please try again.");
+                            continue;
+                        }
+
+                        Timestamp breakStart = Timestamp.valueOf(enteredStart);
+                        Timestamp breakEnd = Timestamp.valueOf(enteredEnd);
                         
                         // add as pair
                         breakDates.add(breakStart);

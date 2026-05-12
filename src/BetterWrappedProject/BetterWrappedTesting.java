@@ -45,6 +45,25 @@ public class BetterWrappedTesting {
         myWrapped.analyze("ONE_SEMESTER", midtermDates, breakDates, null, null, null);
         System.out.println("---------");
 
+        // ----------EDGE CASES----------
+        System.out.println("Testing EDGE CASES for Feature 1 (Out of Bounds, Back-to-Back, Duplicate Dates):");
+        System.out.println("1. Back-to-Back Midterms: Midterms on Sep 29 and Sep 30 (Combines gracefully without duplicating plays).");
+        System.out.println("2. Out of Bounds Date: A midterm from 1999 (Yields no errors, just safely ignores it).");
+        System.out.println("3. Exact Duplicate Date: Midterm and Break on Jul 22 (Break takes priority for Jul 22 plays, but Jul 21 plays still count for the 5-day Midterm window).");
+        System.out.println(".");
+        
+        List<Timestamp> edgeMidtermDates = new ArrayList<>();
+        edgeMidtermDates.add(Timestamp.valueOf(LocalDateTime.of(2023, 9, 29, 23, 59))); // Back-to-back 1
+        edgeMidtermDates.add(Timestamp.valueOf(LocalDateTime.of(2023, 9, 30, 23, 59))); // Back-to-back 2
+        edgeMidtermDates.add(Timestamp.valueOf(LocalDateTime.of(1999, 2, 3, 23, 59)));  // Out of bounds
+        edgeMidtermDates.add(Timestamp.valueOf(LocalDateTime.of(2023, 7, 22, 23, 59))); // Duplicate date
+        List<Timestamp> edgeBreakDates = new ArrayList<>();
+        edgeBreakDates.add(Timestamp.valueOf(LocalDateTime.of(2023, 7, 22, 0, 0))); // Duplicate date start
+        edgeBreakDates.add(Timestamp.valueOf(LocalDateTime.of(2023, 7, 22, 23, 59))); // Duplicate date end
+        
+        myWrapped.analyze("ONE_SEMESTER", edgeMidtermDates, edgeBreakDates, null, null, null);
+        System.out.println("---------");
+
         // ----------FULL_YEAR----------
         System.out.println("Testing FULL_YEAR for Feature 1:");
         System.out.println("All 26 plays should be within the fall semester window. Summer and spring should be empty");
@@ -72,6 +91,10 @@ public class BetterWrappedTesting {
         System.out.println("Testing ONE_SEMESTER for Feature 2:");
         myWrapped.detectOutliersBySemester(midtermDates, breakDates);
 
+        // ----------EDGE CASES----------
+        System.out.println("\nTesting EDGE CASES for Feature 2:");
+        myWrapped.detectOutliersBySemester(edgeMidtermDates, edgeBreakDates);
+
         // ----------FULL_YEAR----------
         System.out.println("Testing FULL_YEAR for Feature 2:");
         myWrapped.detectOutliersByYear(springDates, summerDates, fallDates);
@@ -88,5 +111,9 @@ public class BetterWrappedTesting {
         myWrapped.recommendBySemester(midtermDates, breakDates, "MasterListofSongs(Feature3).csv");
         
         myWrapped.recommendByYear(springDates, summerDates, fallDates,"MasterListofSongs(Feature3).csv");
+
+        // ----------EDGE CASES----------
+        System.out.println("\nTesting EDGE CASES for Feature 3:");
+        myWrapped.recommendBySemester(edgeMidtermDates, edgeBreakDates, "MasterListofSongs(Feature3).csv");
     }
 }
