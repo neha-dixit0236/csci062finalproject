@@ -33,8 +33,8 @@ We use scrobble data from [last.fm](http://last.fm). [This dataset from Kaggle](
 
 ## How to Run the Code
 
-To run the console version, execute `BetterWrapped.java`.
-To run the JavaFX GUI version, execute `BetterWrappedGUILauncher.java` (macOS only). See the GUI section for details.
+- To run the console version, execute `BetterWrapped.java`.
+- To run the JavaFX GUI version, execute `BetterWrappedGUILauncher.java` (macOS only). See the GUI section for details.
 
 ## Project Structure
 ```
