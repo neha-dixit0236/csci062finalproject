@@ -23,14 +23,21 @@ We use data from [last.fm](http://last.fm). [This dataset](https://www.kaggle.co
 ### Feature 1: Listening Trend Analysis
 Look at how users’ listening behavior changes across different academic time periods. It will do so by analyzing song genres, artists, and top songs over a specified time window.
 * **Example Output:** Compares your Top Artist during "Midterms" (e.g., Radiohead) vs. your Top Artist during "Summer Break" (e.g., Anathema).
+![Feature 1 Output](./images/Feature_1.png)  
+![Feature 1 Output](./images/Feature_1.2.png)  
+*Example output of Feature 1*
 
 ### Feature 2: Detecting Outliers
 Find days where a student’s listening behavior is different from their normal listening habits (by the genre they listen to the most) in the established time period.
 * **Example Output:** Flags a specific date, such as `2017-12-22`, where a student listened to an unusual amount of "Metal" despite "Rock" being their seasonal norm.
+![Feature 2 Output](./images/Feature_2.png)  
+*Example output of Feature 2*
 
 ### Feature 3: Focused Recommendations
 Give the user song recommendations based on the student’s listening habits during the time window chosen. We recommend songs that match the student's most popular genre for that specific context.
 * **Example Output:** If your top genre during Fall was "Grunge," the system will output 15 Grunge tracks you haven't listened to yet.
+![Feature 3 Output](./images/Feature_3.png)  
+*Example output of Feature 3*
 
 ---
 
@@ -39,8 +46,14 @@ The central component of this software is the **`BetterWrapped.java`** file. All
 
 1. **Run the Main File:** Open and run `BetterWrapped.java`.
 2. **Select Analysis Window:** The console will ask which time window you would like to analyze: `WEEKDAY_VS_WEEKEND`, `ONE_SEMESTER`, or `FULL_YEAR`.
+
+
 3. **Configuration:** - If you choose **ONE_SEMESTER**, you will be prompted to input the number of midterms and breaks.
    - You will then be asked to input the start and end dates for those periods.
+
+![Console Menu](./images/prompt_screenshot.png)  
+*The user is prompted to select their analysis window.*
+
 4. **View Your Wrapped:** The program will process your CSV and display the statistics, detected outliers, and recommendations directly in the console.
 
 ## Public API Reference
@@ -67,12 +80,3 @@ The following public methods represent the primary interface for the `BetterWrap
 * **Output:** Prints 15 recommended songs for that time window.
 
 
-
-## Results Preview
-Below are the results of the `BetterWrapped.java` execution:
-
-![Console Menu](./images/prompt_screenshot.png)  
-*The user is prompted to select their analysis window.*
-
-![Analysis Output](images/output_screenshot.png)  
-*The final output showing seasonal statistics, outliers, and recommendations.*
