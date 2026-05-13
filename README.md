@@ -590,10 +590,13 @@ For a more visual and interactive experience, this project includes a Graphical 
 
 To launch the GUI, simply run the **`BetterWrappedGUILauncher.java`** file. 
 
-*Note: For the sake of simplicity, the bundled JavaFX `.jar` libraries are currently configured to work only on **macOS/Mac** systems.* 
+Because JavaFX requires OS-specific native graphics engines to draw the windows, you will need to configure the SDK for your system before running the GUI:
+
+1. Go to the [Gluon JavaFX](https://gluonhq.com/products/javafx/) download page and download the **JavaFX 21 SDK** for your specific OS (Windows, Mac, or Linux).
+2. Unzip the downloaded file, and drag the complete `lib/` folder from that download directly into your `csci062finalproject` folder.
+3. In VS Code, go to the **Java Projects** tab (bottom left), expand **Referenced Libraries**, click the **+** icon, and highlight all the `.jar` files in your newly downloaded `lib` folder.
+4. Hit run on **`BetterWrappedGUILauncher.java`**!
 
 Here's the little demo of the GUI if it doesn't work for you!
 
 ![!Better Wrapped GUI Demo](./images/gui_demo.gif)  
-
-
