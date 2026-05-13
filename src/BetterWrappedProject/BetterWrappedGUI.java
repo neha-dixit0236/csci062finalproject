@@ -38,8 +38,13 @@ import java.util.stream.Collectors;
  * 2. Config screen shows only the time-window toggle buttons (no file browsing)
  * 3. Feature 2 detail chart: dual-bar "Seasonal Daily Average vs Spike"
  * 4. Spotify dark-mode aesthetic preserved throughout
+ * 
+ * 
+ * Since this is out of the scope of the class, 
+ * we used LLMs to assist us in building the GUI. 
+ * The full conversation transcript detailing this assistance can be found here: 
+ * https://claude.ai/share/60df2777-4181-44d5-8081-8332fc97ae03
  *
- * @author GUI layer — CSCI 062 Final Project
  */
 public class BetterWrappedGUI extends Application {
 
