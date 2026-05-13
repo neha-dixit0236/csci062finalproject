@@ -31,22 +31,26 @@ The following public methods represent the primary interface for the `BetterWrap
 ### `public BetterWrapped(String fileName)`
 * **Description:** Constructor that initializes the `allHistory` list by parsing the provided CSV listening history.
 * **Input:** `String` (The file path to the listening history CSV).
+* **Output:** A `BetterWrapped` object with a populated history list.
 
 ### `public void analyze(String type, List<Timestamp> midterms, List<Timestamp> breaks, ...)`
 * **Description:** Executes **Feature 1** (Trend Analysis). It filters songs into specific academic "buckets" and calculates top frequencies.
 * **Inputs:** `String` for the window type and `Lists` of `Timestamp` objects defining the academic windows.
+* **Output:** Prints detailed `SongStatistics` to the console.
 
 ### `public void detectOutliersBySemester(List<Timestamp> midterms, List<Timestamp> breaks)`
 * **Description:** Executes **Feature 2** (Outlier Detection). It identifies days where the primary genre listened to differs significantly from the seasonal average.
 * **Inputs:** `List<Timestamp>` objects for midterm and break boundaries.
+* **Output:** Prints dates where listening behavior deviated from the norm.
 
 ### `public void recommendBySemester(List<Timestamp> midterms, List<Timestamp> breaks, String recommendationFile)`
 * **Description:** Executes **Feature 3** (Focused Recommendations). It analyzes the top genre of a specific period and suggests 15 songs from a separate recommendation database.
 * **Inputs:** Academic window `Timestamps` and the path to the recommendation CSV file.
+* **Output:** Prints 15 recommended songs for that time window.
 
 ---
 
-## 📈 Feature Highlights
+## Feature Highlights
 
 ### Feature 1: Listening Trend Analysis
 Look at how users’ listening behavior changes across different academic time periods. It will do so by analyzing song genres, artists, and top songs over a specified time window.
@@ -62,7 +66,7 @@ Give the user song recommendations based on the student’s listening habits dur
 
 ---
 
-## 🖼️ Results Preview
+## Results Preview
 Below are the results of the `BetterWrapped.java` execution:
 
 ![Console Menu](images/prompt_screenshot.png)  
