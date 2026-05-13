@@ -8,15 +8,13 @@
             "type": "java",
             "name": "BetterWrappedGUILauncher",
             "request": "launch",
-            "mainClass": "BetterWrappedProject.BetterWrappedGUILauncher",
-            "projectName": "csci062finalproject_b52ad1fe"
+            "mainClass": "BetterWrappedProject.BetterWrappedGUILauncher"
         },
         {
             "type": "java",
             "name": "BetterWrappedGUI",
             "request": "launch",
-            "mainClass": "BetterWrappedProject.BetterWrappedGUI",
-            "projectName": "csci062finalproject_b52ad1fe"
+            "mainClass": "BetterWrappedProject.BetterWrappedGUI"
         },
         {
             "type": "java",
