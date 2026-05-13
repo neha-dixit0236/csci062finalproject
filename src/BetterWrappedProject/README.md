@@ -65,7 +65,7 @@ Give the user song recommendations based on the student’s listening habits dur
 ## 🖼️ Results Preview
 Below are the results of the `BetterWrapped.java` execution:
 
-![Console Menu](images/menu_screenshot.png)  
+![Console Menu](images/prompt_screenshot.png)  
 *The user is prompted to select their analysis window.*
 
 ![Analysis Output](images/output_screenshot.png)  
