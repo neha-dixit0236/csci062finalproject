@@ -590,7 +590,7 @@ For a more visual and interactive experience, this project includes a Graphical 
 
 To launch the GUI, simply run the **`BetterWrappedGUILauncher.java`** file. 
 
-Because JavaFX requires OS-specific native graphics engines to draw the windows, you will need to configure the SDK for your system before running the GUI:
+Because JavaFX is not a built-in library, we will need to configure the SDK for your system before running the GUI:
 
 1. Go to the [Gluon JavaFX](https://gluonhq.com/products/javafx/) download page and download the **JavaFX 21 SDK** for your specific OS (Windows, Mac, or Linux).
 2. Unzip the downloaded file, and drag the complete `lib/` folder from that download directly into your `csci062finalproject` folder.
