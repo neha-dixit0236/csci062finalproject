@@ -13,52 +13,59 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
- * BetterWrappedGUI — A JavaFX front-end for the BetterWrapped backend.
+ * BetterWrappedGUI — JavaFX front-end for the BetterWrapped backend.
  *
- * Flow: Landing → Config → Dashboard (Tabs: Stats | Anomalies | Discover)
+ * Flow: Landing → Config (window selection only) → Dashboard
  *
- * All backend calls use the exact public API of the project classes:
- *   BetterWrapped, SongStatistics, Bucket, KeyValuePair, SongInfo,
- *   OutlierDetector, OutlierDay,
- *   RecommendationEngine, RecommendationLoader, RecommendationSong
+ * CSV paths are hardcoded; the BetterWrapped engine is pre-loaded on a
+ * background thread while the user is on the Configuration screen.
+ *
+ * Changes in this revision
+ * ─────────────────────────
+ * 1. Hardcoded CSV paths + pre-load on "Get Started" click
+ * 2. Config screen shows only the time-window toggle buttons (no file browsing)
+ * 3. Feature 2 detail chart: dual-bar "Seasonal Daily Average vs Spike"
+ * 4. Spotify dark-mode aesthetic preserved throughout
  *
  * @author GUI layer — CSCI 062 Final Project
  */
 public class BetterWrappedGUI extends Application {
 
-    // ─── Application-level state ─────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════════════
+    // CONSTANTS — hardcoded CSV paths 
+    // ═══════════════════════════════════════════════════════════════════
+    private static final String HISTORY_CSV = "src/BetterWrappedProject/lastFmScrobblesDataSet.csv";
+    private static final String REC_CSV     = "src/BetterWrappedProject/MasterListofSongs(Feature3).csv";
+
+    // ─── Application state ───────────────────────────────────────────
     private Stage         primaryStage;
-    private BetterWrapped wrappedEngine;
+    private BetterWrapped wrappedEngine;          // pre-loaded in background
 
-    // Paths captured from the config form
-    private String historyCSVPath = "";
-    private String recCSVPath     = "";
+    private String selectedWindow  = "WEEKDAY_VS_WEEKEND";
+    private String midtermRawText  = "";
+    private String breakRawText    = "";
 
-    // Which time window the user selected
-    private String selectedWindow = "WEEKDAY_VS_WEEKEND";
-
-    // Raw text from the ONE_SEMESTER panel, captured on the FX thread
-    // *before* the background analysis thread starts (UI controls are FX-only)
-    private String midtermRawText = "";
-    private String breakRawText   = "";
-
-    // Results collected by the analysis thread, consumed by dashboard builders
+    // Results populated by the analysis thread, consumed by dashboard
     private final Map<String, BucketSummary>            summaryMap  = new LinkedHashMap<>();
     private final List<OutlierDay>                       outlierList = new ArrayList<>();
     private final Map<String, List<RecommendationSong>> recMap      = new LinkedHashMap<>();
 
-    // ─── JavaFX entry point ──────────────────────────────────────────────────
+    // Bucket list kept so showOutlierDetail can compute seasonal averages
+    private List<Bucket> lastBuckets = new ArrayList<>();
+
+    // ─── Entry point ─────────────────────────────────────────────────
     public static void main(String[] args) { launch(args); }
 
     @Override
@@ -71,28 +78,22 @@ public class BetterWrappedGUI extends Application {
         stage.show();
     }
 
-    // ════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════
     // SCREEN 1 — LANDING
-    // ════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════
     private void showLanding() {
         StackPane root = new StackPane();
         root.getStyleClass().add("root");
 
-        // Solid dark backdrop that scales with the window
         Rectangle backdrop = new Rectangle();
         backdrop.widthProperty().bind(root.widthProperty());
         backdrop.heightProperty().bind(root.heightProperty());
         backdrop.setFill(Color.web("#121212"));
 
-        // Decorative glowing blobs
-        Circle c1 = glowCircle(340, "#1DB954", 0.18);
-        c1.setTranslateX(-280); c1.setTranslateY(-180);
-        Circle c2 = glowCircle(260, "#b84ef5", 0.20);
-        c2.setTranslateX(320);  c2.setTranslateY(160);
-        Circle c3 = glowCircle(200, "#ff4ecd", 0.15);
-        c3.setTranslateX(-60);  c3.setTranslateY(220);
+        Circle c1 = glowCircle(340, "#1DB954", 0.18);  c1.setTranslateX(-280); c1.setTranslateY(-180);
+        Circle c2 = glowCircle(260, "#b84ef5", 0.20);  c2.setTranslateX(320);  c2.setTranslateY(160);
+        Circle c3 = glowCircle(200, "#ff4ecd", 0.15);  c3.setTranslateX(-60);  c3.setTranslateY(220);
 
-        // Centre content stack
         VBox content = new VBox(28);
         content.setAlignment(Pos.CENTER);
         content.setMaxWidth(520);
@@ -122,11 +123,36 @@ public class BetterWrappedGUI extends Application {
             pill("🎵 Discover Weekly"));
         pills.setAlignment(Pos.CENTER);
 
+        // Toast label — shown if CSVs are missing
+        Label toastLabel = new Label("");
+        toastLabel.getStyleClass().add("toast-error");
+        toastLabel.setVisible(false);
+        toastLabel.setManaged(false);
+
         Button startBtn = new Button("Get Started →");
         startBtn.getStyleClass().addAll("btn-primary", "btn-glow");
-        startBtn.setOnAction(e -> showConfig());
+        startBtn.setOnAction(e -> {
+            // ── Check that both CSV files exist before proceeding ──
+            boolean histOk = new File(HISTORY_CSV).exists();
+            boolean recOk  = new File(REC_CSV).exists();
 
-        content.getChildren().addAll(eyebrow, titleRow, tagline, pills, startBtn);
+            if (!histOk || !recOk) {
+                String missing = (!histOk ? "'" + HISTORY_CSV + "' " : "")
+                    + (!recOk  ? "'" + REC_CSV + "'" : "");
+                toastLabel.setText("⚠  Missing file(s): " + missing.trim()
+                    + " — place them in the correct directory.");
+                toastLabel.setVisible(true);
+                toastLabel.setManaged(true);
+                return;
+            }
+
+            // Files exist — kick off background pre-load immediately,
+            // then navigate to the config screen while it runs.
+            preLoadEngine();
+            showConfig();
+        });
+
+        content.getChildren().addAll(eyebrow, titleRow, tagline, pills, toastLabel, startBtn);
         root.getChildren().addAll(backdrop, c1, c2, c3, content);
 
         Scene scene = new Scene(root, 960, 660);
@@ -134,9 +160,24 @@ public class BetterWrappedGUI extends Application {
         primaryStage.setScene(scene);
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    // SCREEN 2 — CONFIGURATION
-    // ════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════
+    // PRE-LOAD — initialises BetterWrapped engine in the background
+    //            while the user is reading the config screen
+    // ═══════════════════════════════════════════════════════════════════
+    private void preLoadEngine() {
+        new Thread(() -> {
+            try {
+                wrappedEngine = new BetterWrapped(HISTORY_CSV);
+            } catch (Exception ex) {
+                // Will be caught again gracefully when runAnalysis runs
+                wrappedEngine = null;
+            }
+        }, "BetterWrapped-PreLoadThread").start();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // SCREEN 2 — CONFIGURATION  (time-window selection only)
+    // ═══════════════════════════════════════════════════════════════════
     private void showConfig() {
         BorderPane root = new BorderPane();
         root.getStyleClass().add("root");
@@ -146,52 +187,41 @@ public class BetterWrappedGUI extends Application {
         scroll.setFitToWidth(true);
         scroll.getStyleClass().add("scroll-pane-dark");
 
-        VBox form = new VBox(24);
-        form.setPadding(new Insets(36, 60, 36, 60));
+        VBox form = new VBox(32);
+        form.setPadding(new Insets(48, 80, 48, 80));
         form.getStyleClass().add("form-container");
 
-        // ── Step 1: CSV paths ──────────────────────────────────────────────
-        form.getChildren().add(sectionLabel("① Load Your Data"));
+        // ── Section heading ──────────────────────────────────────────
+        Label heading = sectionLabel("Choose Your Time Window");
 
-        Label histLabel = fieldLabel("Listening History CSV");
-        TextField histField = pathField("e.g. ScrobblesForOneSemester.csv");
-        Button histBrowse = browseButton();
-        histBrowse.setOnAction(e -> {
-            File f = csvChooser("Select Listening History CSV");
-            if (f != null) { historyCSVPath = f.getAbsolutePath(); histField.setText(historyCSVPath); }
-        });
-        HBox histRow = new HBox(10, histField, histBrowse);
-        HBox.setHgrow(histField, Priority.ALWAYS);
+        Label subHeading = styledLabel(
+            "Select how you'd like to slice your listening history.", 14, "#808080");
 
-        Label recLabel = fieldLabel("Recommendations CSV");
-        TextField recField = pathField("e.g. MasterListofSongs(Feature3).csv");
-        Button recBrowse = browseButton();
-        recBrowse.setOnAction(e -> {
-            File f = csvChooser("Select Recommendations CSV");
-            if (f != null) { recCSVPath = f.getAbsolutePath(); recField.setText(recCSVPath); }
-        });
-        HBox recRow = new HBox(10, recField, recBrowse);
-        HBox.setHgrow(recField, Priority.ALWAYS);
+        // ── Toggle-button trio ───────────────────────────────────────
+        // Using ToggleButtons styled as pill-cards for a high-end feel
+        ToggleGroup tg = new ToggleGroup();
 
-        form.getChildren().addAll(histLabel, histRow, recLabel, recRow);
+        ToggleButton tbWW  = windowToggle("📅", "Weekday vs Weekend",
+            "Compare your music taste\nacross the working week.", tg, "WEEKDAY_VS_WEEKEND");
+        ToggleButton tbSEM = windowToggle("📚", "One Semester",
+            "Split into Midterms, Breaks,\nand Normal days.", tg, "ONE_SEMESTER");
+        ToggleButton tbFY  = windowToggle("🌍", "Full Year",
+            "Spring · Summer · Fall\nall in one view.", tg, "FULL_YEAR");
 
-        // ── Step 2: Time-window radio buttons ─────────────────────────────
-        form.getChildren().add(sectionLabel("② Choose Time Window"));
+        tbWW.setSelected(true);   // default
 
-        ToggleGroup tg   = new ToggleGroup();
-        RadioButton rbWW  = radio("Weekday vs Weekend",                         tg, "WEEKDAY_VS_WEEKEND");
-        RadioButton rbSEM = radio("One Semester  (Midterms / Breaks / Normal)", tg, "ONE_SEMESTER");
-        RadioButton rbFY  = radio("Full Year  (Spring / Summer / Fall)",        tg, "FULL_YEAR");
-        rbWW.setSelected(true);
+        HBox toggleRow = new HBox(16, tbWW, tbSEM, tbFY);
+        toggleRow.setAlignment(Pos.CENTER);
+        for (Node n : toggleRow.getChildren()) HBox.setHgrow(n, Priority.ALWAYS);
 
-        // ONE_SEMESTER extra inputs — hidden until the user selects that option
+        // ── ONE_SEMESTER date panel ───────────────────────────────────
         TextArea midtermArea = new TextArea();
-        midtermArea.setPromptText("e.g.\n11-10\n11-24");
+        midtermArea.setPromptText("One midterm deadline per line\ne.g.\n11-10\n11-24");
         midtermArea.setPrefRowCount(4);
         midtermArea.getStyleClass().add("text-area-dark");
 
         TextArea breakArea = new TextArea();
-        breakArea.setPromptText("e.g.\n11-26 11-28\n12-15 01-02");
+        breakArea.setPromptText("One break range per line  (start MM-DD  end MM-DD)\ne.g.\n11-26 11-28\n12-15 01-02");
         breakArea.setPrefRowCount(4);
         breakArea.getStyleClass().add("text-area-dark");
 
@@ -201,54 +231,50 @@ public class BetterWrappedGUI extends Application {
             fieldLabel("Break Date Ranges  (start MM-DD  end MM-DD, one pair per line)"),
             breakArea);
         semPanel.getStyleClass().add("card");
-        semPanel.setPadding(new Insets(20));
+        semPanel.setPadding(new Insets(24));
         semPanel.setVisible(false);
         semPanel.setManaged(false);
 
-        // FULL_YEAR informational note
-        Label fullYearNote = styledLabel(
-            "ℹ  Jan–Apr = Spring  ·  May–Aug = Summer  ·  Sep–Dec = Fall",
-            13, "#A0A0A0");
-        fullYearNote.setVisible(false);
-        fullYearNote.setManaged(false);
+        // ── FULL_YEAR info note ───────────────────────────────────────
+        Label fyNote = styledLabel(
+            "ℹ  January–April = Spring  ·  May–August = Summer  ·  September–December = Fall",
+            13, "#606060");
+        fyNote.setVisible(false);
+        fyNote.setManaged(false);
 
         tg.selectedToggleProperty().addListener((obs, old, nw) -> {
-            if (nw == null) return;
+            if (nw == null) { tg.selectToggle(old); return; }   // prevent deselection
             selectedWindow = (String) nw.getUserData();
             boolean isSem = "ONE_SEMESTER".equals(selectedWindow);
             boolean isFY  = "FULL_YEAR".equals(selectedWindow);
-            semPanel.setVisible(isSem);    semPanel.setManaged(isSem);
-            fullYearNote.setVisible(isFY); fullYearNote.setManaged(isFY);
+            semPanel.setVisible(isSem);  semPanel.setManaged(isSem);
+            fyNote.setVisible(isFY);     fyNote.setManaged(isFY);
         });
 
-        form.getChildren().addAll(rbWW, rbSEM, rbFY, semPanel, fullYearNote);
-
-        // ── Generate button ────────────────────────────────────────────────
+        // ── Status / Generate ─────────────────────────────────────────
         Label statusLabel = new Label("");
         statusLabel.getStyleClass().add("status-label");
 
-        Button analyseBtn = new Button("✦ Generate Better Wrapped");
-        analyseBtn.getStyleClass().addAll("btn-primary", "btn-glow");
-        analyseBtn.setMaxWidth(Double.MAX_VALUE);
-        analyseBtn.setOnAction(e -> {
-            // Capture all FX-thread values NOW, before handing off to the background thread
-            historyCSVPath = histField.getText().trim();
-            recCSVPath     = recField.getText().trim();
+        Button generateBtn = new Button("✦ Generate My Better Wrapped");
+        generateBtn.getStyleClass().addAll("btn-primary", "btn-glow");
+        generateBtn.setMaxWidth(560);
+
+        generateBtn.setOnAction(e -> {
+            // Capture FX-thread text values before spawning the analysis thread
             midtermRawText = midtermArea.getText();
             breakRawText   = breakArea.getText();
 
-            if (historyCSVPath.isEmpty() || recCSVPath.isEmpty()) {
-                statusLabel.setText("⚠  Please fill in both CSV paths.");
-                statusLabel.setStyle("-fx-text-fill:#ff4e4e;");
-                return;
-            }
-            statusLabel.setText("⏳  Loading & analysing — please wait…");
+            statusLabel.setText("⏳  Analysing your listening history — please wait…");
             statusLabel.setStyle("-fx-text-fill:#A0A0A0;");
-            analyseBtn.setDisable(true);
-            runAnalysis(analyseBtn, statusLabel);
+            generateBtn.setDisable(true);
+
+            runAnalysis(generateBtn, statusLabel);
         });
 
-        form.getChildren().addAll(new Separator(), analyseBtn, statusLabel);
+        VBox btnWrapper = new VBox(12, generateBtn, statusLabel);
+        btnWrapper.setAlignment(Pos.CENTER);
+
+        form.getChildren().addAll(heading, subHeading, toggleRow, semPanel, fyNote, btnWrapper);
         scroll.setContent(form);
         root.setCenter(scroll);
 
@@ -257,27 +283,32 @@ public class BetterWrappedGUI extends Application {
         primaryStage.setScene(scene);
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    // ANALYSIS — runs on a background thread; UI updates via Platform.runLater
-    // ════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════
+    // ANALYSIS THREAD
+    // ═══════════════════════════════════════════════════════════════════
     private void runAnalysis(Button btn, Label statusLabel) {
         new Thread(() -> {
             try {
-                // 1. Load listening history via BetterWrapped constructor
-                wrappedEngine = new BetterWrapped(historyCSVPath);
+                // Wait briefly if pre-load hasn't finished yet (max 8 s)
+                int waited = 0;
+                while (wrappedEngine == null && waited < 80) {
+                    Thread.sleep(100);
+                    waited++;
+                }
+                if (wrappedEngine == null)
+                    wrappedEngine = new BetterWrapped(HISTORY_CSV);   // fallback
+
                 List<KeyValuePair> history = wrappedEngine.getAllHistory();
                 if (history == null || history.isEmpty())
-                    throw new Exception("Listening history CSV is empty or could not be read.");
+                    throw new Exception("History CSV is empty or could not be read.");
 
-                // Detect the year from the first entry
                 int year = history.get(0).getTimeStamp().toLocalDateTime().getYear();
 
-                // 2. Build date-bound lists for the chosen analysis mode
-                List<Timestamp> mt = new ArrayList<>();  // midterm deadlines
-                List<Timestamp> br = new ArrayList<>();  // break [start,end] pairs
-                List<Timestamp> sp = new ArrayList<>();  // spring [start,end]
-                List<Timestamp> su = new ArrayList<>();  // summer [start,end]
-                List<Timestamp> fa = new ArrayList<>();  // fall   [start,end]
+                List<Timestamp> mt = new ArrayList<>();
+                List<Timestamp> br = new ArrayList<>();
+                List<Timestamp> sp = new ArrayList<>();
+                List<Timestamp> su = new ArrayList<>();
+                List<Timestamp> fa = new ArrayList<>();
 
                 if ("ONE_SEMESTER".equals(selectedWindow)) {
                     parseSemesterDates(year, mt, br);
@@ -287,12 +318,11 @@ public class BetterWrappedGUI extends Application {
                     fa.add(ts(year,  9,  1,  0,  0));  fa.add(ts(year, 12, 31, 23, 59));
                 }
 
-                // 3. Collect all data for the three dashboard tabs
-                collectSummaries(mt, br, sp, su, fa);
-                collectOutliers( mt, br, sp, su, fa);
-                collectRecommendations(mt, br, sp, su, fa);
+                lastBuckets = buildBuckets(mt, br, sp, su, fa);
+                collectSummaries();
+                collectOutliers();
+                collectRecommendations();
 
-                // 4. Transition to the dashboard on the FX thread
                 Platform.runLater(this::showDashboard);
 
             } catch (Exception ex) {
@@ -305,24 +335,16 @@ public class BetterWrappedGUI extends Application {
         }, "BetterWrapped-AnalysisThread").start();
     }
 
-    /**
-     * Parses the raw text captured from the ONE_SEMESTER panel.
-     *   Midterm lines : "MM-DD"
-     *   Break lines   : "MM-DD MM-DD"   (start then end, space-separated)
-     */
-    private void parseSemesterDates(int year,
-                                    List<Timestamp> mt,
-                                    List<Timestamp> br) throws Exception {
+    private void parseSemesterDates(int year, List<Timestamp> mt, List<Timestamp> br)
+            throws Exception {
         for (String line : midtermRawText.split("\\n")) {
             line = line.trim();
             if (line.isEmpty()) continue;
             String[] p = line.split("-");
             if (p.length < 2) continue;
-            LocalDateTime d = LocalDateTime.of(
-                year, Integer.parseInt(p[0].trim()), Integer.parseInt(p[1].trim()), 23, 59);
-            mt.add(Timestamp.valueOf(d));
+            mt.add(Timestamp.valueOf(LocalDateTime.of(
+                year, Integer.parseInt(p[0].trim()), Integer.parseInt(p[1].trim()), 23, 59)));
         }
-
         for (String line : breakRawText.split("\\n")) {
             line = line.trim();
             if (line.isEmpty()) continue;
@@ -335,52 +357,36 @@ public class BetterWrappedGUI extends Application {
         }
     }
 
-    // ── Data collectors (all called from the analysis thread) ────────────────
+    // ── Data collectors ──────────────────────────────────────────────
 
-    /** Fills summaryMap — used by the Stats tab. */
-    private void collectSummaries(List<Timestamp> mt, List<Timestamp> br,
-                                  List<Timestamp> sp, List<Timestamp> su, List<Timestamp> fa) {
+    private void collectSummaries() {
         summaryMap.clear();
-        for (Bucket b : buildBuckets(mt, br, sp, su, fa)) {
+        for (Bucket b : lastBuckets) {
             SongStatistics stats = new SongStatistics(b.getPlays());
             summaryMap.put(b.getName(), new BucketSummary(
-                b.getName(),
-                stats.getTopArtist(),
-                stats.getTopSong(),
-                stats.getTopGenre(),
-                b.getPlays().size(),
-                buildGenreFreqMap(b.getPlays())
-            ));
+                b.getName(), stats.getTopArtist(), stats.getTopSong(),
+                stats.getTopGenre(), b.getPlays().size(),
+                buildGenreFreqMap(b.getPlays())));
         }
     }
 
-    /** Fills outlierList — used by the Anomalies tab. */
-    private void collectOutliers(List<Timestamp> mt, List<Timestamp> br,
-                                 List<Timestamp> sp, List<Timestamp> su, List<Timestamp> fa) {
+    private void collectOutliers() {
         outlierList.clear();
-        // OutlierDetector constructor: (List<Bucket>, int minPlaysPerDay)
-        OutlierDetector detector = new OutlierDetector(buildBuckets(mt, br, sp, su, fa), 4);
-        outlierList.addAll(detector.findOutliers());
+        outlierList.addAll(new OutlierDetector(lastBuckets, 4).findOutliers());
     }
 
-    /** Fills recMap — used by the Discover tab. */
-    private void collectRecommendations(List<Timestamp> mt, List<Timestamp> br,
-                                        List<Timestamp> sp, List<Timestamp> su, List<Timestamp> fa) {
+    private void collectRecommendations() {
         recMap.clear();
-        // RecommendationLoader.loadSongs(String fileName) → List<RecommendationSong>
-        List<RecommendationSong> pool = RecommendationLoader.loadSongs(recCSVPath);
-        // RecommendationEngine(List<RecommendationSong>, List<KeyValuePair>)
-        RecommendationEngine engine =
-            new RecommendationEngine(pool, wrappedEngine.getAllHistory());
-        // recommendSongs(List<Bucket>) → Map<String, List<RecommendationSong>>
-        recMap.putAll(engine.recommendSongs(buildBuckets(mt, br, sp, su, fa)));
+        List<RecommendationSong> pool = RecommendationLoader.loadSongs(REC_CSV);
+        recMap.putAll(new RecommendationEngine(pool, wrappedEngine.getAllHistory())
+            .recommendSongs(lastBuckets));
     }
 
-    // ── Bucketing helpers — mirror BetterWrapped's private bucket methods ─────
+    // ── Bucketing helpers ────────────────────────────────────────────
 
-    /** Routes to the correct bucket builder for the selected window. */
     private List<Bucket> buildBuckets(List<Timestamp> mt, List<Timestamp> br,
-                                      List<Timestamp> sp, List<Timestamp> su, List<Timestamp> fa) {
+                                      List<Timestamp> sp, List<Timestamp> su,
+                                      List<Timestamp> fa) {
         switch (selectedWindow) {
             case "ONE_SEMESTER": return bucketSemester(mt, br);
             case "FULL_YEAR":    return bucketYear(sp, su, fa);
@@ -388,103 +394,101 @@ public class BetterWrappedGUI extends Application {
         }
     }
 
-    /** WEEKDAY_VS_WEEKEND bucketing — mirrors BetterWrapped.bucketWeekdayWeekend(). */
     private List<Bucket> bucketWeekdayWeekend() {
-        Bucket weekday = new Bucket("WEEKDAY");
-        Bucket weekend = new Bucket("WEEKEND");
+        Bucket weekday = new Bucket("WEEKDAY"), weekend = new Bucket("WEEKEND");
         for (KeyValuePair kvp : wrappedEngine.getAllHistory()) {
-            DayOfWeek day = kvp.getTimeStamp().toLocalDateTime().getDayOfWeek();
-            if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) weekend.addPlay(kvp);
-            else                                                        weekday.addPlay(kvp);
+            DayOfWeek d = kvp.getTimeStamp().toLocalDateTime().getDayOfWeek();
+            if (d == DayOfWeek.SATURDAY || d == DayOfWeek.SUNDAY) weekend.addPlay(kvp);
+            else                                                    weekday.addPlay(kvp);
         }
-        List<Bucket> result = new ArrayList<>();
-        result.add(weekday);
-        result.add(weekend);
-        return result;
+        return asList(weekday, weekend);
     }
 
-    /**
-     * ONE_SEMESTER bucketing — mirrors BetterWrapped.bucketSemester().
-     * Break takes priority over midterm window.
-     */
-    private List<Bucket> bucketSemester(List<Timestamp> midtermDates,
-                                        List<Timestamp> breakDates) {
-        Bucket midterm = new Bucket("MIDTERM");
-        Bucket brk     = new Bucket("BREAK");
-        Bucket normal  = new Bucket("NORMAL");
+    private List<Bucket> bucketSemester(List<Timestamp> midterms, List<Timestamp> breaks) {
+        Bucket mid = new Bucket("MIDTERM"), brk = new Bucket("BREAK"), norm = new Bucket("NORMAL");
         for (KeyValuePair kvp : wrappedEngine.getAllHistory()) {
             Timestamp st = kvp.getTimeStamp();
-            if      (isWithinDateRange(st, breakDates))        brk.addPlay(kvp);
-            else if (isWithinWindow(st, midtermDates, 5))  midterm.addPlay(kvp);
-            else                                             normal.addPlay(kvp);
+            if      (isWithinDateRange(st, breaks))      brk.addPlay(kvp);
+            else if (isWithinWindow(st, midterms, 5))    mid.addPlay(kvp);
+            else                                         norm.addPlay(kvp);
         }
-        List<Bucket> result = new ArrayList<>();
-        result.add(midterm);
-        result.add(brk);
-        result.add(normal);
-        return result;
+        return asList(mid, brk, norm);
     }
 
-    /** FULL_YEAR bucketing — mirrors BetterWrapped.bucketYear(). */
-    private List<Bucket> bucketYear(List<Timestamp> springDates,
-                                    List<Timestamp> summerDates,
-                                    List<Timestamp> fallDates) {
-        Bucket spring = new Bucket("SPRING");
-        Bucket summer = new Bucket("SUMMER");
-        Bucket fall   = new Bucket("FALL");
+    private List<Bucket> bucketYear(List<Timestamp> sp, List<Timestamp> su, List<Timestamp> fa) {
+        Bucket spring = new Bucket("SPRING"), summer = new Bucket("SUMMER"), fall = new Bucket("FALL");
         for (KeyValuePair kvp : wrappedEngine.getAllHistory()) {
             Timestamp st = kvp.getTimeStamp();
-            if      (isWithinDateRange(st, springDates)) spring.addPlay(kvp);
-            else if (isWithinDateRange(st, summerDates)) summer.addPlay(kvp);
-            else if (isWithinDateRange(st, fallDates))     fall.addPlay(kvp);
+            if      (isWithinDateRange(st, sp)) spring.addPlay(kvp);
+            else if (isWithinDateRange(st, su)) summer.addPlay(kvp);
+            else if (isWithinDateRange(st, fa))   fall.addPlay(kvp);
         }
-        List<Bucket> result = new ArrayList<>();
-        result.add(spring);
-        result.add(summer);
-        result.add(fall);
-        return result;
+        return asList(spring, summer, fall);
     }
 
-    /**
-     * Returns true if t falls within any [start, end] pair in importantDates.
-     * Mirrors BetterWrapped.isWithinDateRange.
-     */
-    private boolean isWithinDateRange(Timestamp t, List<Timestamp> importantDates) {
-        if (importantDates == null || importantDates.size() < 2) return false;
-        for (int i = 0; i + 1 < importantDates.size(); i += 2) {
-            if (!t.before(importantDates.get(i)) && !t.after(importantDates.get(i + 1)))
-                return true;
-        }
+    private boolean isWithinDateRange(Timestamp t, List<Timestamp> dates) {
+        if (dates == null || dates.size() < 2) return false;
+        for (int i = 0; i + 1 < dates.size(); i += 2)
+            if (!t.before(dates.get(i)) && !t.after(dates.get(i + 1))) return true;
         return false;
     }
 
-    /**
-     * Returns true if t falls within daysBefore days before any deadline.
-     * Mirrors BetterWrapped.isWithinWindow.
-     */
     private boolean isWithinWindow(Timestamp t, List<Timestamp> deadlines, int daysBefore) {
         if (deadlines == null || deadlines.isEmpty()) return false;
-        for (Timestamp deadline : deadlines) {
-            Timestamp start = Timestamp.valueOf(deadline.toLocalDateTime().minusDays(daysBefore));
-            if (!t.before(start) && !t.after(deadline)) return true;
+        for (Timestamp d : deadlines) {
+            Timestamp start = Timestamp.valueOf(d.toLocalDateTime().minusDays(daysBefore));
+            if (!t.before(start) && !t.after(d)) return true;
         }
         return false;
     }
 
-    /** Counts plays per genre for a list of KeyValuePairs.
-     *  Uses KeyValuePair.getSongObject() and SongInfo.getGenre(). */
     private Map<String, Integer> buildGenreFreqMap(List<KeyValuePair> plays) {
-        Map<String, Integer> map = new LinkedHashMap<>();
-        for (KeyValuePair kvp : plays) {
-            String g = kvp.getSongObject().getGenre();   // SongInfo.getGenre()
-            map.merge(g, 1, Integer::sum);
-        }
-        return map;
+        Map<String, Integer> m = new LinkedHashMap<>();
+        for (KeyValuePair kvp : plays)
+            m.merge(kvp.getSongObject().getGenre(), 1, Integer::sum);
+        return m;
     }
 
-    // ════════════════════════════════════════════════════════════════════════
+    /** Returns the Bucket from lastBuckets whose name matches bucketName. */
+    private Optional<Bucket> findBucket(String bucketName) {
+        return lastBuckets.stream()
+            .filter(b -> b.getName().equals(bucketName))
+            .findFirst();
+    }
+
+    /**
+     * Computes the seasonal daily average play-count for every genre present
+     * in the given bucket.
+     *
+     * Formula: totalGenrePlays / uniqueDaysInBucket
+     *
+     * Returns a Map<genre, averagePlaysPerDay>.
+     */
+    private Map<String, Double> computeSeasonalDailyAverages(Bucket bucket) {
+        List<KeyValuePair> plays = bucket.getPlays();
+
+        // Count unique days
+        Set<LocalDate> uniqueDays = plays.stream()
+            .map(kvp -> kvp.getTimeStamp().toLocalDateTime().toLocalDate())
+            .collect(Collectors.toSet());
+        int numDays = Math.max(1, uniqueDays.size());   // guard against /0
+
+        // Total plays per genre across the whole bucket
+        Map<String, Integer> genreTotals = new LinkedHashMap<>();
+        for (KeyValuePair kvp : plays)
+            genreTotals.merge(kvp.getSongObject().getGenre(), 1, Integer::sum);
+
+        // Divide each total by the number of unique days
+        Map<String, Double> averages = new LinkedHashMap<>();
+        for (Map.Entry<String, Integer> e : genreTotals.entrySet())
+            averages.put(e.getKey(), (double) e.getValue() / numDays);
+
+        return averages;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
     // SCREEN 3 — DASHBOARD
-    // ════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════
     private void showDashboard() {
         BorderPane root = new BorderPane();
         root.getStyleClass().add("root");
@@ -502,20 +506,17 @@ public class BetterWrappedGUI extends Application {
         primaryStage.setScene(scene);
     }
 
-    // ── Tab 1: Listening Stats ────────────────────────────────────────────────
+    // ── Tab 1: Listening Stats ────────────────────────────────────────
     private Tab buildStatsTab() {
         Tab tab = new Tab("📊  Listening Stats");
-
         ScrollPane sp = new ScrollPane();
         sp.setFitToWidth(true);
         sp.getStyleClass().add("scroll-pane-dark");
 
         VBox content = new VBox(32);
         content.setPadding(new Insets(32));
-
         for (BucketSummary bs : summaryMap.values())
             content.getChildren().add(buildBucketCard(bs));
-
         content.getChildren().add(buildTrendComparison());
 
         sp.setContent(content);
@@ -532,14 +533,13 @@ public class BetterWrappedGUI extends Application {
         nameLabel.setStyle("-fx-font-weight:800; -fx-font-family:'Georgia';");
 
         HBox statsRow = new HBox(16,
-            miniStat("🎤 TOP ARTIST",  bs.topArtist),
-            miniStat("🎵 TOP SONG",    bs.topSong),
-            miniStat("🎸 TOP GENRE",   bs.topGenre),
-            miniStat("▶ TOTAL PLAYS",  String.valueOf(bs.totalPlays)));
+            miniStat("🎤 TOP ARTIST", bs.topArtist),
+            miniStat("🎵 TOP SONG",   bs.topSong),
+            miniStat("🎸 TOP GENRE",  bs.topGenre),
+            miniStat("▶ TOTAL PLAYS", String.valueOf(bs.totalPlays)));
         statsRow.setAlignment(Pos.CENTER_LEFT);
         for (Node n : statsRow.getChildren()) HBox.setHgrow(n, Priority.ALWAYS);
 
-        // PieChart — top 6 genres
         PieChart pie = new PieChart();
         pie.getStyleClass().add("genre-pie");
         pie.setLegendVisible(true);
@@ -551,9 +551,7 @@ public class BetterWrappedGUI extends Application {
             .limit(6)
             .forEach(e -> pie.getData().add(new PieChart.Data(e.getKey(), e.getValue())));
 
-        // BarChart — build once; do NOT call buildGenreBarChart twice
         BarChart<String, Number> bar = buildGenreBarChart(bs);
-
         HBox bottom = new HBox(24, pie, bar);
         HBox.setHgrow(pie, Priority.ALWAYS);
         HBox.setHgrow(bar, Priority.ALWAYS);
@@ -609,14 +607,14 @@ public class BetterWrappedGUI extends Application {
             ? "✅ Artist stayed: " + a.topArtist
             : "🔄 Artist: " + a.topArtist + " → " + b.topArtist;
         String songLine   = a.topSong.equals(b.topSong)
-            ? "✅ Top song stayed: " + a.topSong
+            ? "✅ Top song: " + a.topSong
             : "🔄 Song: " + a.topSong + " → " + b.topSong;
 
         VBox info = new VBox(6,
             styledLabel(a.name + "  vs  " + b.name, 14, "#FFFFFF"),
-            styledLabel(genreLine,  12, "#A0A0A0"),
+            styledLabel(genreLine, 12, "#A0A0A0"),
             styledLabel(artistLine, 12, "#A0A0A0"),
-            styledLabel(songLine,   12, "#A0A0A0"));
+            styledLabel(songLine, 12, "#A0A0A0"));
 
         HBox row = new HBox(info);
         row.setPadding(new Insets(12));
@@ -624,26 +622,24 @@ public class BetterWrappedGUI extends Application {
         return row;
     }
 
-    // ── Tab 2: Anomaly Feed ───────────────────────────────────────────────────
+    // ── Tab 2: Anomaly Feed ───────────────────────────────────────────
     private Tab buildAnomalyTab() {
         Tab tab = new Tab("🔍  Anomaly Feed");
 
         SplitPane split = new SplitPane();
         split.getStyleClass().add("split-dark");
 
-        // Left: scrollable chip list
         ScrollPane feedScroll = new ScrollPane();
         feedScroll.setFitToWidth(true);
         feedScroll.getStyleClass().add("scroll-pane-dark");
         VBox feed = new VBox(10);
         feed.setPadding(new Insets(20));
 
-        // Right: detail view
         VBox detailPane = new VBox(20);
         detailPane.setPadding(new Insets(24));
         detailPane.getStyleClass().add("root");
         detailPane.getChildren().add(
-            styledLabel("← Click an anomaly to see\nthe genre spike detail.", 14, "#606060"));
+            styledLabel("← Click an anomaly to see\nthe genre spike vs. normal.", 14, "#606060"));
 
         if (outlierList.isEmpty()) {
             feed.getChildren().add(styledLabel("No outlier days detected.", 14, "#A0A0A0"));
@@ -662,21 +658,12 @@ public class BetterWrappedGUI extends Application {
         return tab;
     }
 
-    /**
-     * Builds an outlier chip button.
-     *
-     * OutlierDay public API used:
-     *   getDate()          → LocalDate   (the outlier date)
-     *   getDayGenre()      → String      (top genre on that day — NOT getOutlierGenre)
-     *   getPlayCount()     → int         (plays on that day   — NOT getOutlierCount)
-     *   getBucketName()    → String      (parent bucket name)
-     *   getBaselineGenre() → String      (overall bucket top genre)
-     */
     private Button buildOutlierChip(OutlierDay od) {
         String label = od.getDate()
             + "  ·  " + od.getDayGenre()
             + "  ×" + od.getPlayCount()
-            + "  (usual: " + od.getBaselineGenre() + "  in " + od.getBucketName() + ")";
+            + "  (usual: " + od.getBaselineGenre()
+            + "  in " + od.getBucketName() + ")";
         Button b = new Button(label);
         b.getStyleClass().add("outlier-chip");
         b.setMaxWidth(Double.MAX_VALUE);
@@ -684,46 +671,118 @@ public class BetterWrappedGUI extends Application {
     }
 
     /**
-     * Detail view for a clicked outlier.
-     * OutlierDay has NO getGenreCounts() method — we show the known spike only.
+     * Feature 2 detail — side-by-side comparison chart.
+     *
+     * For every genre that appears either on the outlier day or in the seasonal
+     * averages, we render two bars:
+     *   Series "Seasonal Avg"  — the genre's average plays per day in the bucket
+     *                            (muted grey, CSS class .bar-average)
+     *   Series "Spike Day"     — the genre's actual play count on the outlier day
+     *                            (neon green/pink, CSS class .bar-spike)
+     *
+     * The seasonal daily average is computed as:
+     *   totalGenrePlaysInBucket / numberOfUniqueDaysInBucket
      */
     private void showOutlierDetail(OutlierDay od, VBox pane) {
         pane.getChildren().clear();
 
-        Label title = styledLabel("📅 " + od.getDate(), 18, "#ff4ecd");
-        title.setStyle("-fx-font-weight:700;");
+        // ── Header labels ──
+        Label titleLbl = styledLabel("📅 " + od.getDate(), 18, "#ff4ecd");
+        titleLbl.setStyle("-fx-font-weight:700;");
 
-        Label sub = styledLabel(
-            "Outlier genre: " + od.getDayGenre()
+        Label subLbl = styledLabel(
+            "Spike genre: " + od.getDayGenre()
             + "  ·  Baseline: " + od.getBaselineGenre()
             + "  ·  Bucket: " + od.getBucketName(),
             13, "#A0A0A0");
 
-        // Bar chart: one bar for the outlier genre (actual count), one for the baseline (0)
+        // ── Retrieve the parent bucket ──
+        Optional<Bucket> bucketOpt = findBucket(od.getBucketName());
+
+        // ── Build genre sets ──
+        // "Spike day" counts: we only know the outlier genre count from OutlierDay.
+        // We treat every other genre on the chart as having 0 spike-day plays.
+        Map<String, Integer> spikeMap = new LinkedHashMap<>();
+        spikeMap.put(od.getDayGenre(), od.getPlayCount());
+
+        // Seasonal daily averages: computed from the full bucket
+        Map<String, Double> avgMap = new LinkedHashMap<>();
+        if (bucketOpt.isPresent()) {
+            avgMap = computeSeasonalDailyAverages(bucketOpt.get());
+        } else {
+            // Fallback: just show the baseline genre at 0
+            avgMap.put(od.getBaselineGenre(), 0.0);
+        }
+
+        // Union of genres we want to display: top-6 from avgMap + outlier genre
+        Set<String> genreSet = new LinkedHashSet<>();
+        genreSet.add(od.getDayGenre());            // outlier genre first
+        genreSet.add(od.getBaselineGenre());       // baseline genre second
+        // add top genres from the seasonal averages (limit total to 6)
+        avgMap.entrySet().stream()
+            .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
+            .limit(6)
+            .forEach(e -> genreSet.add(e.getKey()));
+
+        // ── Build chart ──
         CategoryAxis xAxis = new CategoryAxis();
         NumberAxis   yAxis = new NumberAxis();
+        xAxis.setLabel("Genre");
+        yAxis.setLabel("Plays");
+
         BarChart<String, Number> chart = new BarChart<>(xAxis, yAxis);
-        chart.setTitle("Genre Spike on " + od.getDate());
-        chart.getStyleClass().add("genre-bar");
+        chart.setTitle("Spike vs. Seasonal Average  —  " + od.getDate());
+        chart.getStyleClass().add("spike-comparison-chart");
         chart.setAnimated(false);
-        chart.setLegendVisible(false);
+        chart.setLegendVisible(true);
+        chart.setCategoryGap(18);
+        chart.setBarGap(4);
+        chart.setPrefHeight(320);
 
-        XYChart.Series<String, Number> series = new XYChart.Series<>();
-        // Outlier genre bar — od.getPlayCount() is the total plays on that day
-        series.getData().add(new XYChart.Data<>(od.getDayGenre(), od.getPlayCount()));
-        // Baseline genre shown at 0 as a visual anchor (only if different)
-        if (!od.getBaselineGenre().equals(od.getDayGenre())) {
-            series.getData().add(new XYChart.Data<>(od.getBaselineGenre(), 0));
+        // Series 1 — Seasonal Daily Average (grey)
+        XYChart.Series<String, Number> avgSeries = new XYChart.Series<>();
+        avgSeries.setName("Seasonal Avg");
+
+        // Series 2 — Spike Day (neon green / pink)
+        XYChart.Series<String, Number> spikeSeries = new XYChart.Series<>();
+        spikeSeries.setName("Spike Day");
+
+        final Map<String, Double> finalAvgMap = avgMap;
+        for (String genre : genreSet) {
+            double avg   = finalAvgMap.getOrDefault(genre, 0.0);
+            int    spike = spikeMap.getOrDefault(genre, 0);
+            avgSeries.getData().add(new XYChart.Data<>(genre, avg));
+            spikeSeries.getData().add(new XYChart.Data<>(genre, spike));
         }
-        chart.getData().add(series);
 
-        pane.getChildren().addAll(title, sub, chart);
+        // Add series BEFORE styling nodes (nodes don't exist until after add)
+        chart.getData().addAll(avgSeries, spikeSeries);
+
+        // Apply CSS style classes to the individual bar nodes on the FX thread
+        // after the chart has been laid out.
+        Platform.runLater(() -> {
+            for (XYChart.Data<String, Number> d : avgSeries.getData()) {
+                if (d.getNode() != null)
+                    d.getNode().getStyleClass().addAll("bar-average");
+            }
+            for (XYChart.Data<String, Number> d : spikeSeries.getData()) {
+                if (d.getNode() != null)
+                    d.getNode().getStyleClass().addAll("bar-spike");
+            }
+        });
+
+        // ── Legend row ──
+        HBox legend = new HBox(24,
+            legendDot("#404040", "Seasonal Daily Avg"),
+            legendDot("#1DB954", "Spike Day"));
+        legend.setAlignment(Pos.CENTER_LEFT);
+
+        pane.getChildren().addAll(titleLbl, subLbl, chart, legend);
     }
 
-    // ── Tab 3: Discover Weekly ────────────────────────────────────────────────
+    // ── Tab 3: Discover Weekly ────────────────────────────────────────
     private Tab buildDiscoverTab() {
         Tab tab = new Tab("🎵  Discover Weekly");
-
         ScrollPane sp = new ScrollPane();
         sp.setFitToWidth(true);
         sp.getStyleClass().add("scroll-pane-dark");
@@ -732,11 +791,10 @@ public class BetterWrappedGUI extends Application {
         content.setPadding(new Insets(32));
 
         if (recMap.isEmpty()) {
-            content.getChildren().add(
-                styledLabel("No recommendations generated.", 14, "#A0A0A0"));
+            content.getChildren().add(styledLabel("No recommendations generated.", 14, "#A0A0A0"));
         } else {
-            for (Map.Entry<String, List<RecommendationSong>> entry : recMap.entrySet())
-                content.getChildren().add(buildRecSection(entry.getKey(), entry.getValue()));
+            for (Map.Entry<String, List<RecommendationSong>> e : recMap.entrySet())
+                content.getChildren().add(buildRecSection(e.getKey(), e.getValue()));
         }
 
         sp.setContent(content);
@@ -767,14 +825,6 @@ public class BetterWrappedGUI extends Application {
         return section;
     }
 
-    /**
-     * Song card.
-     *
-     * RecommendationSong public API used:
-     *   getSongName()  → String   (NOT getTitle — that method does not exist)
-     *   getArtist()    → String
-     *   getGenre()     → String
-     */
     private VBox buildSongCard(RecommendationSong song) {
         VBox card = new VBox(6);
         card.getStyleClass().add("song-card");
@@ -782,14 +832,10 @@ public class BetterWrappedGUI extends Application {
         card.setMinWidth(200);
 
         Label icon   = styledLabel("♪", 22, "#1DB954");
-
-        // RecommendationSong.getSongName() — correct accessor
         Label title  = styledLabel(song.getSongName(), 13, "#FFFFFF");
         title.setWrapText(true);
         title.setStyle("-fx-font-weight:600;");
-
         Label artist = styledLabel(song.getArtist(), 11, "#A0A0A0");
-
         Label genre  = new Label(song.getGenre());
         genre.getStyleClass().add("genre-pill");
 
@@ -797,13 +843,11 @@ public class BetterWrappedGUI extends Application {
         return card;
     }
 
-    // ════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════
     // SHARED UI COMPONENT FACTORIES
-    // ════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════
 
-    /**
-     * @param showBack  true on Dashboard (back → config screen); false on Config screen.
-     */
+    /** @param showBack true on Dashboard; false on Config screen */
     private HBox headerBar(String titleText, boolean showBack) {
         HBox bar = new HBox();
         bar.getStyleClass().add("header-bar");
@@ -821,12 +865,10 @@ public class BetterWrappedGUI extends Application {
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
-
         Region gap = new Region();
         gap.setMinWidth(14);
 
         bar.getChildren().addAll(logo, gap, title, spacer);
-
         if (showBack) {
             Button backBtn = new Button("← Back");
             backBtn.getStyleClass().add("btn-ghost");
@@ -834,6 +876,32 @@ public class BetterWrappedGUI extends Application {
             bar.getChildren().add(backBtn);
         }
         return bar;
+    }
+
+    /**
+     * A tall toggle-button card used for time-window selection.
+     * Icon + title line + subtitle description.
+     */
+    private ToggleButton windowToggle(String icon, String titleText,
+                                      String description, ToggleGroup tg, String userData) {
+        Label iconLbl = styledLabel(icon, 28, "#FFFFFF");
+        Label titleLbl = styledLabel(titleText, 14, "#FFFFFF");
+        titleLbl.setStyle("-fx-font-weight:700;");
+        Label descLbl = styledLabel(description, 11, "#808080");
+        descLbl.setWrapText(true);
+        descLbl.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+
+        VBox inner = new VBox(8, iconLbl, titleLbl, descLbl);
+        inner.setAlignment(Pos.CENTER);
+
+        ToggleButton tb = new ToggleButton();
+        tb.setGraphic(inner);
+        tb.setToggleGroup(tg);
+        tb.setUserData(userData);
+        tb.getStyleClass().add("window-toggle");
+        tb.setMaxWidth(Double.MAX_VALUE);
+        tb.setPrefHeight(140);
+        return tb;
     }
 
     private Label styledLabel(String text, double size, String hex) {
@@ -844,7 +912,7 @@ public class BetterWrappedGUI extends Application {
 
     private Label sectionLabel(String text) {
         Label l = new Label(text);
-        l.setStyle("-fx-font-size:17px; -fx-font-weight:800;" +
+        l.setStyle("-fx-font-size:22px; -fx-font-weight:800;" +
                    "-fx-text-fill:#FFFFFF; -fx-font-family:'Georgia';");
         return l;
     }
@@ -853,28 +921,6 @@ public class BetterWrappedGUI extends Application {
         Label l = new Label(text);
         l.setStyle("-fx-font-size:13px; -fx-font-weight:600; -fx-text-fill:#CCCCCC;");
         return l;
-    }
-
-    private TextField pathField(String prompt) {
-        TextField tf = new TextField();
-        tf.setPromptText(prompt);
-        tf.getStyleClass().add("text-field-dark");
-        tf.setPrefHeight(38);
-        return tf;
-    }
-
-    private Button browseButton() {
-        Button b = new Button("Browse…");
-        b.getStyleClass().add("btn-secondary");
-        return b;
-    }
-
-    private RadioButton radio(String label, ToggleGroup tg, String userData) {
-        RadioButton rb = new RadioButton(label);
-        rb.setToggleGroup(tg);
-        rb.setUserData(userData);
-        rb.getStyleClass().add("radio-dark");
-        return rb;
     }
 
     private HBox pill(String text) {
@@ -889,32 +935,32 @@ public class BetterWrappedGUI extends Application {
         VBox box = new VBox(4);
         box.getStyleClass().add("mini-stat");
         box.setPadding(new Insets(14, 18, 14, 18));
-
         Label lbl = styledLabel(label, 10, "#808080");
         lbl.setStyle("-fx-font-weight:700; -fx-letter-spacing:1.5;");
-
-        Label val = styledLabel(
-            (value == null || value.isBlank()) ? "—" : value, 14, "#FFFFFF");
+        Label val = styledLabel((value == null || value.isBlank()) ? "—" : value, 14, "#FFFFFF");
         val.setWrapText(true);
-
         box.getChildren().addAll(lbl, val);
         return box;
+    }
+
+    /** Small legend dot + label used in the outlier detail chart. */
+    private HBox legendDot(String hexColor, String labelText) {
+        Region dot = new Region();
+        dot.setMinSize(12, 12);
+        dot.setMaxSize(12, 12);
+        dot.setStyle("-fx-background-color:" + hexColor
+            + "; -fx-background-radius:50%;");
+        Label lbl = styledLabel(labelText, 12, "#A0A0A0");
+        HBox row = new HBox(8, dot, lbl);
+        row.setAlignment(Pos.CENTER_LEFT);
+        return row;
     }
 
     private Circle glowCircle(double radius, String hex, double opacity) {
         Circle c = new Circle(radius);
         c.setFill(Color.web(hex, opacity));
-        DropShadow glow = new DropShadow(radius * 0.9, Color.web(hex, 0.5));
-        c.setEffect(glow);
+        c.setEffect(new DropShadow(radius * 0.9, Color.web(hex, 0.5)));
         return c;
-    }
-
-    private File csvChooser(String title) {
-        FileChooser fc = new FileChooser();
-        fc.setTitle(title);
-        fc.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
-        return fc.showOpenDialog(primaryStage);
     }
 
     private void attachCSS(Scene scene) {
@@ -922,32 +968,29 @@ public class BetterWrappedGUI extends Application {
         if (css != null) scene.getStylesheets().add(css.toExternalForm());
     }
 
-    /** Shorthand for creating a Timestamp from discrete date/time parts. */
     private static Timestamp ts(int y, int mo, int d, int h, int m) {
         return Timestamp.valueOf(LocalDateTime.of(y, mo, d, h, m));
     }
 
-    // ════════════════════════════════════════════════════════════════════════
+    @SafeVarargs
+    private static <T> List<T> asList(T... items) {
+        List<T> l = new ArrayList<>();
+        Collections.addAll(l, items);
+        return l;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
     // INNER CLASS — BucketSummary
-    // Pre-computed stats for one bucket so the FX-thread dashboard builders
-    // do not need to re-run SongStatistics after the analysis thread finishes.
-    // ════════════════════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════════════
     private static final class BucketSummary {
-        final String              name;
-        final String              topArtist;
-        final String              topSong;
-        final String              topGenre;
+        final String              name, topArtist, topSong, topGenre;
         final int                 totalPlays;
         final Map<String, Integer> genreFreq;
 
         BucketSummary(String name, String topArtist, String topSong,
                       String topGenre, int totalPlays, Map<String, Integer> genreFreq) {
-            this.name       = name;
-            this.topArtist  = topArtist;
-            this.topSong    = topSong;
-            this.topGenre   = topGenre;
-            this.totalPlays = totalPlays;
-            this.genreFreq  = genreFreq;
+            this.name = name; this.topArtist = topArtist; this.topSong = topSong;
+            this.topGenre = topGenre; this.totalPlays = totalPlays; this.genreFreq = genreFreq;
         }
     }
 }
