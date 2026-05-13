@@ -109,7 +109,7 @@ This section documents every public method on every class, with a usage example 
 - **Description:** Constructor that initializes the `allHistory` list by parsing the provided CSV listening history.
 - **Input:** `fileName`, the file path to the listening history CSV.
 - **Output:** A new `BetterWrapped` object with `allHistory` populated.
-- **Usage Example:**
+- **Usage example:**
   ```java
   BetterWrapped wrapped = new BetterWrapped("src/BetterWrappedProject/ScrobblesForOneWeek.csv");
   // wrapped.getAllHistory() now contains plays in ScrobblesForOneWeek.csv
@@ -123,7 +123,7 @@ This section documents every public method on every class, with a usage example 
   - `breakDates`, pairs of timestamps bounding each break window (used only by `ONE_SEMESTER`).
   - `springDates`, `summerDates`, `fallDates`: pairs of `[start, end]` bounding each semester (used only by `FULL_YEAR`).
 - **Output:** None (prints detailed `SongStatistics` to the console).
-- **Usage Example:**
+- **Usage example:**
   ```java
   wrapped.analyze("WEEKDAY_VS_WEEKEND", null, null, null, null, null);
   // print in the console:
@@ -140,7 +140,7 @@ This section documents every public method on every class, with a usage example 
 - **Description:** Executes **Feature 2** for the weekday and weekend buckets.
 - **Inputs:** None
 - **Output:** None (prints outlier days to the console).
-- **Usage Example:**
+- **Usage example:**
   ```java
   wrapped.detectOutliersByWeekdayWeekend();
   // print in the console:
@@ -191,7 +191,7 @@ This section documents every public method on every class, with a usage example 
 - **Description:** Executes **Feature 3** for weekday and weekend buckets.
 - **Input:** `recommendationFile`, path to a CSV.
 - **Output:** none (prints recommendations to console).
-- **Usage Example:**
+- **Usage example:**
   ```java
   wrapped.recommendByWeekdayWeekend("src/BetterWrappedProject/MasterListofSongs(Feature3).csv");
   // print in the console:
@@ -206,7 +206,7 @@ This section documents every public method on every class, with a usage example 
 - **Description:** Executes **Feature 3** for midterm, break, and normal buckets.
 - **Inputs:** Academic window `Timestamps` and the path to the recommendation CSV file.
 - **Output:** None (prints 15 recommended songs for that time window).
-- **Usage Example:**
+- **Usage example:**
   ```java
   wrapped.recommendBySemester(midterms, breaks,
       "src/BetterWrappedProject/MasterListofSongs(Feature3).csv");
@@ -219,7 +219,7 @@ This section documents every public method on every class, with a usage example 
 - **Description:** Executes **Feature 3** for spring, summer, and fall buckets.
 - **Inputs:** Semester window `Timestamps` and the path to the recommendation CSV file.
 - **Output:** None (prints 15 recommended songs for that time window).
-- **Usage Example:**
+- **Usage example:**
   ```java
   wrapped.recommendByYear(spring, summer, fall, "src/BetterWrappedProject/MasterListofSongs(Feature3).csv");
   // print in the console:
