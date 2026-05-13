@@ -16,6 +16,24 @@ We will also be mapping from bucket (e.g. midterm, break, spring semester, etc) 
 ### The Data Set
 We use data from [last.fm](http://last.fm). [This dataset](https://www.kaggle.com/datasets/basharsalman/lastfm) has timestamps as well as the artist, song name, and genre of each song. We will use [this dataset](https://www.kaggle.com/datasets/jacopoferretti/chinook-music-database?select=archive), which includes lots of different songs, for Feature 3.
 
+---
+
+## Feature Highlights
+
+### Feature 1: Listening Trend Analysis
+Look at how users’ listening behavior changes across different academic time periods. It will do so by analyzing song genres, artists, and top songs over a specified time window.
+* **Example Output:** Compares your Top Artist during "Midterms" (e.g., Radiohead) vs. your Top Artist during "Summer Break" (e.g., Anathema).
+
+### Feature 2: Detecting Outliers
+Find days where a student’s listening behavior is different from their normal listening habits (by the genre they listen to the most) in the established time period.
+* **Example Output:** Flags a specific date, such as `2017-12-22`, where a student listened to an unusual amount of "Metal" despite "Rock" being their seasonal norm.
+
+### Feature 3: Focused Recommendations
+Give the user song recommendations based on the student’s listening habits during the time window chosen. We recommend songs that match the student's most popular genre for that specific context.
+* **Example Output:** If your top genre during Fall was "Grunge," the system will output 15 Grunge tracks you haven't listened to yet.
+
+---
+
 ## Execution Instructions
 The central component of this software is the **`BetterWrapped.java`** file. All project features and logic are executed from this file's `public static void main` method.
 
@@ -25,7 +43,7 @@ The central component of this software is the **`BetterWrapped.java`** file. All
    - You will then be asked to input the start and end dates for those periods.
 4. **View Your Wrapped:** The program will process your CSV and display the statistics, detected outliers, and recommendations directly in the console.
 
-## 📚 Public API Reference
+## Public API Reference
 The following public methods represent the primary interface for the `BetterWrapped` class.
 
 ### `public BetterWrapped(String fileName)`
@@ -48,23 +66,7 @@ The following public methods represent the primary interface for the `BetterWrap
 * **Inputs:** Academic window `Timestamps` and the path to the recommendation CSV file.
 * **Output:** Prints 15 recommended songs for that time window.
 
----
 
-## Feature Highlights
-
-### Feature 1: Listening Trend Analysis
-Look at how users’ listening behavior changes across different academic time periods. It will do so by analyzing song genres, artists, and top songs over a specified time window.
-* **Example Output:** Compares your Top Artist during "Midterms" (e.g., Radiohead) vs. your Top Artist during "Summer Break" (e.g., Anathema).
-
-### Feature 2: Detecting Outliers
-Find days where a student’s listening behavior is different from their normal listening habits (by the genre they listen to the most) in the established time period.
-* **Example Output:** Flags a specific date, such as `2017-12-22`, where a student listened to an unusual amount of "Metal" despite "Rock" being their seasonal norm.
-
-### Feature 3: Focused Recommendations
-Give the user song recommendations based on the student’s listening habits during the time window chosen. We recommend songs that match the student's most popular genre for that specific context.
-* **Example Output:** If your top genre during Fall was "Grunge," the system will output 15 Grunge tracks you haven't listened to yet.
-
----
 
 ## Results Preview
 Below are the results of the `BetterWrapped.java` execution:
