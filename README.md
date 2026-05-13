@@ -11,6 +11,7 @@ Better Wrapped is a more personalized and context-aware experience that not only
 - [Feature Highlights](#feature-highlights)
 - [Execution Instructions](#execution-instructions)
 - [Public API Reference](#public-api-reference)
+- [Graphical User Interface (GUI)](#graphical-user-interface)
 
 ## Project Intro: What even is Better Wrapped?
 At the end of every year, Spotify releases “Spotify Wrapped,” a slideshow that summarizes users’ listening habits over the past year. It compiles data on each users’ favorite artists, songs, and total minutes listened, and presents the information in a way that makes it easy for users to share their music summaries with each other. However, this music summary is static. It does not provide any insight into the ways a user’s listening habits change throughout time periods. We believe that music listening data is closely connected to one’s daily routines, emotional states, and life events. Thus, we built Better Wrapped, a more personalized and context-aware experience that not only summarizes listening history but also allows users to understand the differences between their music tastes during various academic time windows.
@@ -32,12 +33,14 @@ We use scrobble data from [last.fm](http://last.fm). [This dataset from Kaggle](
 
 ## How to Run the Code
 
-TODO: GUI stuff
+To run the console version, execute `BetterWrapped.java`.
+To run the JavaFX GUI version, execute `BetterWrappedGUILauncher.java` (macOS only). See the GUI section for details.
 
 ## Project Structure
 ```
 csci062finalproject/
 ├── README.md
+├── lib/                                    # included .jar files for GUI launcher
 ├── images/                                 # example screenshots used in README
 └── src/BetterWrappedProject/
    ├── BetterWrapped.java                   # entry point + use the program
@@ -580,4 +583,13 @@ This section documents every public method on every class, with a usage example 
   // Output: Parsed 192 plays
   ```
 
+## Graphical User Interface
 
+For a more visual and interactive experience, this project includes a Graphical User Interface built with **JavaFX**. Since this is out of the scope of the class, we used LLMs to assist us in building the GUI. The full conversation transcript detailing this assistance can be found here: 
+[Claude AI Conversation Transcript](https://claude.ai/share/60df2777-4181-44d5-8081-8332fc97ae03).
+
+To launch the GUI, simply run the **`BetterWrappedGUILauncher.java`** file. 
+
+*Note: For the sake of simplicity, the bundled JavaFX `.jar` libraries are currently configured to work only on **macOS/Mac** systems.*
+
+!Better Wrapped GUI Demo
