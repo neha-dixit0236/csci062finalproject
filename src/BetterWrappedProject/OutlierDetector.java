@@ -31,7 +31,7 @@ public class OutlierDetector {
     public OutlierDetector(List<Bucket> bucketHistory, int minPlaysPerDay) {
         this.buckets = bucketHistory;
         this.minPlaysPerDay = minPlaysPerDay;
-    } //might have to change comment on this
+    }
 
     /**
      * Iterates through buckets to find days where the most played genre does not match the bucket's overall top genre.
@@ -88,7 +88,7 @@ public class OutlierDetector {
 
 
     /**
-     * Prints a human-readable result of outlier days and grouped by bucket
+     * Prints the result of outlier days that looks pretty and grouped by bucket
      * @param outliers the list returned by findOutlier method
      */
     public void printOutliers (List<OutlierDay> outliers) {

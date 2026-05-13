@@ -11,7 +11,6 @@ import java.util.*;
  * @author Stefanie Nguyen
  */
 
-
 /**
  * Main class to execute all features
  */
@@ -19,7 +18,7 @@ public class BetterWrapped {
     
     // threshold for a day to be counted as an outlier
     private static final int MIN_PLAYS_PER_DAY = 4;
-    //list of all of the listening history: not sure how to upload the data set and squeeze it into this list
+    //list of all of the listening history
     private List<KeyValuePair> allHistory;
 
     /**
@@ -60,7 +59,7 @@ public class BetterWrapped {
     }
 
     /**
-     * INSERT JAVADOC HERE!!!!!
+     * Getter for list of all of the listening history
      * @return allHistory
      */
     public List<KeyValuePair> getAllHistory() {
@@ -206,7 +205,7 @@ public class BetterWrapped {
         }
     } 
 
-    //FEATURE 1 COMPARISON HELPERS
+    // FEATURE 1 COMPARISON HELPERS
 
     /**
     * Compares buckets and prints how listening behavior changes.
@@ -309,7 +308,6 @@ public class BetterWrapped {
         }
     }
 
-
     // Feature 1 helpers to determine the date range
 
     /**
@@ -336,7 +334,6 @@ public class BetterWrapped {
 
         return false;
     }
-
 
     /**
      * Checks if a song is played within n days before a deadline. For midterms.
@@ -393,10 +390,10 @@ public class BetterWrapped {
     }
 
     /**
-     * Runs the outlier detection process for a given list of buckets and prints the results.
+     * Helper to run feature 2 to detect outliers
      * @param buckets the list of categorized buckets to scan for outliers
      */
-    private void runOutlierDetector(List<Bucket> buckets) { // private or public????????
+    private void runOutlierDetector(List<Bucket> buckets) {
         OutlierDetector detect = new OutlierDetector(buckets, MIN_PLAYS_PER_DAY);
         List<OutlierDay> outliers = detect.findOutliers();
         detect.printOutliers(outliers);
@@ -407,7 +404,6 @@ public class BetterWrapped {
     //FEATURE 3: Personalized Recommendations Based on Genre
     //////////////////////////////////////////////////////////
 
-
     /**
      * Generates recommendations based on listening trends for weekday and weekend periods.
      * @param recommendationFile the CSV dataset file containing available songs to recommend
@@ -417,20 +413,35 @@ public class BetterWrapped {
         runRecommendations(buckets, recommendationFile);
     }
 
+    /**
+     * Generates recommendations based on listening trends for midterm, break, and normal periods
+     * @param midtermDates list of midterm deadline timestamps
+     * @param breakDates list of timestamps bounding the break
+     * @param recommendationFile the CSV dataset file containing available songs to recommend
+     */
     public void recommendBySemester(List<Timestamp> midtermDates, List<Timestamp> breakDates, String recommendationFile){
         List<Bucket> buckets = bucketSemester(midtermDates, breakDates);
         runRecommendations(buckets, recommendationFile);
     }
 
-    public void recommendByYear(List<Timestamp> springDates, List<Timestamp> summerDates, List<Timestamp> fallDates, String recFile){
+    /**
+     * Generates recommendations based on listening trends for spring, summer, and fall semesters
+     * @param springDates list of timestamps that bound the spring semester
+     * @param summerDates list of timestamps that bound the summer break
+     * @param fallDates list of timestamps that bound the fall semester
+     * @param recommendationFile the CSV dataset file containing available songs to recommend
+     */
+    public void recommendByYear(List<Timestamp> springDates, List<Timestamp> summerDates, List<Timestamp> fallDates, String recommendationFile){
         List<Bucket> buckets = bucketYear(springDates, summerDates, fallDates);
 
-        runRecommendations(buckets, recFile);
+        runRecommendations(buckets, recommendationFile);
     }
 
-
-
-    //Feature 3 helper method
+    /**
+     * Helper to run feature 3 to to give song recommendations
+     * @param buckets the list of categorized buckets
+     * @param recFile the CSV dataset file containing available songs to recommend
+     */
     private void runRecommendations(List<Bucket> buckets, String recFile){
         List<RecommendationSong> recommendationSongs = RecommendationLoader.loadSongs(recFile);
         RecommendationEngine recEngine = new RecommendationEngine(recommendationSongs, allHistory);
@@ -439,8 +450,6 @@ public class BetterWrapped {
 
         recEngine.printRecommendations(recommendedSongs);
     }
-
-
 
     /**
      * Main method to test all BetterWrapped features.
@@ -554,7 +563,6 @@ public class BetterWrapped {
                 }
             }
 
-
             // --------------------------
             // Multiple breaks
             // --------------------------
@@ -649,7 +657,6 @@ public class BetterWrapped {
             }
         }
 
-
         // FULL YEAR 
 
         if (userWindow.equals("FULL_YEAR")) {
@@ -665,8 +672,6 @@ public class BetterWrapped {
             fallDates.add(Timestamp.valueOf( LocalDateTime.of(detectedYear, 9, 1, 0, 0)));
             fallDates.add(Timestamp.valueOf(LocalDateTime.of(detectedYear, 12, 31, 23, 59)));
         }
-
-
 
         // ===================================
         // Generate Better Wrapped
