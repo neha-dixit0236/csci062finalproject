@@ -592,4 +592,6 @@ To launch the GUI, simply run the **`BetterWrappedGUILauncher.java`** file.
 
 *Note: For the sake of simplicity, the bundled JavaFX `.jar` libraries are currently configured to work only on **macOS/Mac** systems.*
 
-!Better Wrapped GUI Demo
+![!Better Wrapped GUI Demo](./images/gui_demo.gif)  
+
+
