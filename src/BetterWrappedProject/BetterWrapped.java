@@ -637,11 +637,11 @@ public class BetterWrapped {
                             continue;
                         }
 
-                        if (!enteredEnd.isAfter(enteredStart)) {
+                        if (!enteredEnd.toLocalDate().isAfter(enteredStart.toLocalDate())) {
                             System.out.println("Break end date must be after the start date. Please try again.");
                             continue;
                         }
-                        
+       
                         boolean overlapsMidterm = false;
 
                         for (Timestamp midterm : midtermDates) {
