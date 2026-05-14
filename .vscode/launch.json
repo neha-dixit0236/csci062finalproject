@@ -9,6 +9,13 @@
             "name": "BetterWrapped",
             "request": "launch",
             "mainClass": "BetterWrappedProject.BetterWrapped",
+            "projectName": "csci062finalproject_b52ad1fe"
+        },
+        {
+            "type": "java",
+            "name": "BetterWrapped",
+            "request": "launch",
+            "mainClass": "BetterWrappedProject.BetterWrapped",
             "projectName": "finalproject_bc1cfd32"
         },
         {
