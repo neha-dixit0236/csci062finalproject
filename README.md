@@ -4,6 +4,8 @@
 
 Better Wrapped is a more personalized and context-aware experience that not only summarizes music listening history but why and when they listened. It is especially tailored to students by looking at semester and year schedules. The full write-up with project motivation, analysis, and reflection can be found [here](https://docs.google.com/document/d/101-mJg4NkhzfgP9eDJ299lXNP9pA6s6ord0t_SuiXIs/edit?usp=sharing).
 
+***The program assumes that the CSV with the user's listening history is nicely inputted and correctly formatted into our src/BetterWrappedProject folder and into the correct line in our public main method.***
+
 ## Table of Contents
 - [Project Intro](#project-intro-what-even-is-better-wrapped)
 - [How to Run the Code](#how-to-run-the-code)
@@ -74,8 +76,6 @@ We use scrobble data from [last.fm](http://last.fm). [This dataset from Kaggle](
 
 - To run the console version, execute `BetterWrapped.java`. See the [Execution Instructions](#execution-instructions) section for details.
 - To run the JavaFX GUI version, execute `BetterWrappedGUILauncher.java` (macOS only). See the [GUI](#graphical-user-interface) section for details.
-
-*The program assumes that the CSV with the user's listening history is nicely inputted and correctly formatted as shown by our existing CSV files. Users can create an alternate CSV of the same format and place it in `BetterWrappedProject` to run the program.*
 
 ## Project Structure
 ```
