@@ -662,9 +662,6 @@ public class BetterWrapped {
                         Timestamp breakStart = Timestamp.valueOf(enteredStart);
                         Timestamp breakEnd = Timestamp.valueOf(enteredEnd);
                         
-                        
-                        
-                        
                         boolean overlapsBreak = false;
 
                         for (int j = 0; j < breakDates.size() - 1; j += 2) {
