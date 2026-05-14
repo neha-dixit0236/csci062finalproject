@@ -29,9 +29,21 @@ public class BetterWrapped {
         this.allHistory = MusicDataLoader.CSVAnalysis(fileName);
     }
 
+
+
+
     //////////////////////////////////////////////////////////
     // FEATURE 1: Listening Trend Analysis
     //////////////////////////////////////////////////////////
+
+    /**
+     * Getter for list of all of the listening history
+     * @return allHistory
+     */
+    public List<KeyValuePair> getAllHistory() {
+        return allHistory;
+    }
+    
 
     /**
      * The most important method to execute Feature 1.
@@ -58,13 +70,10 @@ public class BetterWrapped {
         }
     }
 
-    /**
-     * Getter for list of all of the listening history
-     * @return allHistory
-     */
-    public List<KeyValuePair> getAllHistory() {
-        return allHistory;
-    }
+
+    //==============================================
+    // FEATURE 1 HELPERS: Private analyze methods
+    //==============================================
 
     /**
      * Analyze listening history on weekdays (mon-fri) vs on weekends (sat-sun)
@@ -74,6 +83,34 @@ public class BetterWrapped {
         printBucketStatistics(buckets);
         compareBuckets(buckets);
     }
+
+    /**
+     * Analyze listening history by midterm season, academic break, and normal days
+     * @param midtermDates list of midterm deadline timestamps
+     * @param breakDates list of timestamps describing the break window
+     */
+    private void analyzeSemester(List<Timestamp> midtermDates, List<Timestamp> breakDates){
+        List<Bucket> buckets = bucketSemester(midtermDates, breakDates);
+        printBucketStatistics(buckets);
+        compareBuckets(buckets);
+    }
+
+    /**
+     * Analyze a year's listening history by spring, summer, and fall semesters
+     * @param springDates list of timestamps that bound the spring semester
+     * @param summerDates list of timestamps that bound the summer break
+     * @param fallDates list of timestamps that bound the fall semester
+     */
+    private void analyzeYear(List<Timestamp> springDates, List<Timestamp> summerDates, List<Timestamp> fallDates){
+        List<Bucket> buckets = bucketYear(springDates, summerDates, fallDates);
+        printBucketStatistics(buckets);
+        compareBuckets(buckets);
+    }
+
+
+    //==============================================
+    // FEATURE 1 HELPERS: Bucket helper methods
+    //==============================================
 
     /**
      * Helper method to bucket listening history into WEEKDAY and WEEKEND.
@@ -99,18 +136,6 @@ public class BetterWrapped {
         result.add(weekend);
 
         return result;
-    }
-
-
-    /**
-     * Analyze listening history by midterm season, academic break, and normal days
-     * @param midtermDates list of midterm deadline timestamps
-     * @param breakDates list of timestamps describing the break window
-     */
-    private void analyzeSemester(List<Timestamp> midtermDates, List<Timestamp> breakDates){
-        List<Bucket> buckets = bucketSemester(midtermDates, breakDates);
-        printBucketStatistics(buckets);
-        compareBuckets(buckets);
     }
 
     /**
@@ -147,18 +172,6 @@ public class BetterWrapped {
     }
 
     /**
-     * Analyze a year's listening history by spring, summer, and fall semesters
-     * @param springDates list of timestamps that bound the spring semester
-     * @param summerDates list of timestamps that bound the summer break
-     * @param fallDates list of timestamps that bound the fall semester
-     */
-    private void analyzeYear(List<Timestamp> springDates, List<Timestamp> summerDates, List<Timestamp> fallDates){
-        List<Bucket> buckets = bucketYear(springDates, summerDates, fallDates);
-        printBucketStatistics(buckets);
-        compareBuckets(buckets);
-    }
-
-    /**
      * Helper method to bucket listening history into SPRING, SUMMER, and FALL semesters.
      * @param springDates timestamps bounding the spring semester
      * @param summerDates timestamps bounding the summer semester
@@ -192,6 +205,10 @@ public class BetterWrapped {
     }
 
 
+    //==============================================
+    // FEATURE 1 HELPERS: Printing Bucket Statistics
+    //==============================================
+
     /**
      * Helper method to print song statistics for a given list of buckets.
      * @param buckets the list of buckets to analyze and print
@@ -205,7 +222,10 @@ public class BetterWrapped {
         }
     } 
 
-    // FEATURE 1 COMPARISON HELPERS
+    
+    //==============================================
+    // FEATURE 1 HELPERS: Comparison helpers
+    //==============================================
 
     /**
     * Compares buckets and prints how listening behavior changes.
@@ -308,8 +328,11 @@ public class BetterWrapped {
         }
     }
 
-    // Feature 1 helpers to determine the date range
 
+    //==============================================
+    // FEATURE 1 HELPERS: Date Logic
+    //==============================================
+    
     /**
      * Checks if a song is played within the inclusive range from the earliest to the latest date in importantDates. 
      * For breaks and semesters of a year.
@@ -361,6 +384,11 @@ public class BetterWrapped {
         return false;
     }
 
+
+
+
+
+
     //////////////////////////////////////////////////////////
     // FEATURE 2: Detecting Outliers
     //////////////////////////////////////////////////////////
@@ -400,6 +428,10 @@ public class BetterWrapped {
     }
 
 
+
+
+
+
     //////////////////////////////////////////////////////////
     //FEATURE 3: Personalized Recommendations Based on Genre
     //////////////////////////////////////////////////////////
@@ -437,6 +469,11 @@ public class BetterWrapped {
         runRecommendations(buckets, recommendationFile);
     }
 
+
+    //=================================================================
+    //FEATURE 3 HELPER: Creating song recommendations for time windows
+    //=================================================================
+
     /**
      * Helper to run feature 3 to to give song recommendations
      * @param buckets the list of categorized buckets
@@ -451,23 +488,47 @@ public class BetterWrapped {
         recEngine.printRecommendations(recommendedSongs);
     }
 
+
+
+
+
+
+    //////////////////////////////////////////////////////////
+    // MAIN METHOD FOR TESTING
+    //////////////////////////////////////////////////////////
+    
     /**
      * Main method to test all BetterWrapped features.
      * @param args command-line arguments (not used)
      */
     public static void main(String[] args){
+        
+        // ===================================
+        // Program Setup
+        // ===================================
+
         Scanner scanner = new Scanner(System.in);
         BetterWrapped userWrapped = null;
 
+
+        // ===================================
+        // Welcome Message
+        // ===================================
         System.out.println("=========================================");
         System.out.println("Welcome to Better Wrapped Interactive!");
         System.out.println("=========================================");
 
-        //Creating our recommendation file variable
+
+        // ===================================
+        // Recommendation Dataset Setup
+        // ===================================
         String recommendationFile = "src/BetterWrappedProject/MasterListofSongs(Feature3).csv";
         String userWindow = "";
 
-        //Asking the user for a valid time window
+
+        // ===================================
+        // User Selects Time Window
+        // ===================================
         while (true){
             System.out.print("What time window would you like to analyze? (WEEKDAY_VS_WEEKEND, ONE_SEMESTER, FULL_YEAR): ");
             userWindow = scanner.nextLine().trim().toUpperCase();
@@ -492,16 +553,22 @@ public class BetterWrapped {
         List<Timestamp> summerDates = new ArrayList<>();
         List<Timestamp> fallDates = new ArrayList<>();
 
-        // WEEKDAY_VS_WEEKEND
+
+        // ===================================
+        // WEEKDAY_VS_WEEKEND Setup
+        // ===================================
         if (userWindow.equals("WEEKDAY_VS_WEEKEND")){
             userWrapped = new BetterWrapped("src/BetterWrappedProject/ScrobblesForOneWeek.csv");
         }
 
-        // ONE_SEMESTER 
-        if (userWindow.equals("ONE_SEMESTER")) {
-            userWrapped = new BetterWrapped("src/BetterWrappedProject/ScrobblesForSpringSemester.csv"); //so would i just change the name here if i'm assuming the user already has their csv uploaded properly?
 
-            //figuring out the year
+        // ===================================
+        // ONE_SEMESTER Setup
+        // ===================================
+        if (userWindow.equals("ONE_SEMESTER")) {
+            userWrapped = new BetterWrapped("src/BetterWrappedProject/ScrobblesForOneSemester.csv");
+
+            // Determine semester year
             List<KeyValuePair> history = userWrapped.getAllHistory();
             int detectedYear = history.get(0).getTimeStamp().toLocalDateTime().getYear();
             System.out.println("\nDetected listening history year: " + detectedYear);
@@ -554,7 +621,6 @@ public class BetterWrapped {
                         }
 
                         //check for duplicate midterm dates
-                        // check duplicate midterm dates
                         boolean duplicateMidterm = false;
 
                         for (Timestamp existing : midtermDates) {
@@ -694,8 +760,10 @@ public class BetterWrapped {
             }
         }
 
-        // FULL YEAR 
 
+        // ===================================
+        // FULL_YEAR Setup
+        // ===================================
         if (userWindow.equals("FULL_YEAR")) {
             userWrapped = new BetterWrapped("src/BetterWrappedProject/ScrobblesForOneYear.csv");
             int detectedYear = userWrapped.getAllHistory().get(0).getTimeStamp().toLocalDateTime().getYear();
@@ -713,7 +781,6 @@ public class BetterWrapped {
         // ===================================
         // Generate Better Wrapped
         // ===================================
-
         System.out.println("\nGenerating your Better Wrapped...");
 
         if (userWindow.equals("WEEKDAY_VS_WEEKEND")) {
