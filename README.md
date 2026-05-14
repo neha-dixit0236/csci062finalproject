@@ -213,7 +213,11 @@ The central component of this software is the **`BetterWrapped.java`** file. All
 1. **Run the Main File:** Open and run `BetterWrapped.java`.
 2. **Select Analysis Window:** The console will ask which time window you would like to analyze: `WEEKDAY_VS_WEEKEND`, `ONE_SEMESTER`, or `FULL_YEAR`.
 3. **Configuration:** - If you choose **ONE_SEMESTER**, you will be prompted to input the number of midterms and breaks.
-   - If you choose `ONE_SEMESTER`, you will be prompted to input the number of midterms and break, and then asked to input the start and end dates for those periods.
+   - If you chooose `ONE_SEMESTER`, you will be prompted to input the number of midterms and break, and then asked to input the start and end dates for those periods.
+   - If you chooose `WEEKDAY_VS_WEEKEND` or `FULL_YEAR`, you will not be prompted to input anything since the system presets dates for those windows.
+     - For the `FULL_YEAR` analysis, we consider January-April to be Spring Semester, May-August to be Summer Break, and September-December to be Fall Semester.
+     - `FULL_YEAR` is defined to be from January to December *only*, so the program would not do full year with overlap (i.e. September 2022 to September 2023).
+
 ```
 =========================================
 Welcome to Better Wrapped Interactive!
@@ -233,9 +237,6 @@ Enter BREAK #1 START date (MM-DD): 04-20
 Enter BREAK #1 END date (MM-DD): 04-22
 ``` 
 *The user is prompted to select their analysis window.*
-   - If you chooose `WEEKDAY_VS_WEEKEND` or `FULL_YEAR`, you will not be prompted to input anything since the system presets dates for those windows.
-     - For the `FULL_YEAR` analysis, we consider January-April to be Spring Semester, May-August to be Summer Break, and September-December to be Fall Semester.
-     - `FULL_YEAR` is defined to be from January to December *only*, so the program would not do full year with overlap (i.e. September 2022 to September 2023).
 
 4. **View Your Wrapped:** The program will process your CSV and display the statistics, detected outliers, and recommendations directly in the console.
 
