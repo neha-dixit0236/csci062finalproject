@@ -19,9 +19,48 @@ At the end of every year, Spotify releases “Spotify Wrapped,” a slideshow th
 Specifically, Better Wrapped introduces three key features. First, it maps listening trends to important academic events: weekends vs weekdays, midterms vs academic breaks vs normal days in a semester, or differences in fall and spring semester and summer break. Second, our program detects outliers in students’ listening habits that don’t fit with their normal listening taste during the time window. Third, based on a users’ top genre in a time period, Better Wrapped provides song recommendations that the user might also enjoy listening to. With this project, we hope that Better Wrapped will show students how their academic lives contextualize their listening habits.
 
 ### Example Output
-![Feature 1 Output](./images/Feature_1.png)  
-![Feature 1 Output](./images/Feature_1.2.png)  
-*Console output of Feature 1: statistics and side-by-side listening trend comparison between spring, summer, and fall semesters.*
+
+```java
+Note: For FULL_YEAR analysis, we consider January-April to be Spring Semester, May-August to be Summer Break, and September-December to be Fall Semester.
+Please ensure your listening history is from January to December of the same year (e.g., not from September of one year to September of another).
+
+Generating your Better Wrapped...
+=== SPRING STATS ===
+Top Artist: Radiohead
+Top Song: Jigsaw Falling Into Place
+Top Genre: Rock
+
+=== SUMMER STATS ===
+Top Artist: Anathema
+Top Song: Springfield
+Top Genre: Rock
+
+=== FALL STATS ===
+Top Artist: Audioslave
+Top Song: Getaway Car
+Top Genre: Rock
+
+=== Listening Trend Comparison ===
+
+>> SPRING vs SUMMER
+Your top genre stayed consistent. Your top genre was: Rock
+Favorite artist changed from Radiohead during SPRING to Anathema during SUMMER
+Top song changed from Jigsaw Falling Into Place during SPRING to Springfield during SUMMER
+---------
+
+>> SPRING vs FALL
+Your top genre stayed consistent. Your top genre was: Rock
+Favorite artist changed from Radiohead during SPRING to Audioslave during FALL
+Top song changed from Jigsaw Falling Into Place during SPRING to Getaway Car during FALL
+---------
+
+>> SUMMER vs FALL
+Your top genre stayed consistent. Your top genre was: Rock
+Favorite artist changed from Anathema during SUMMER to Audioslave during FALL
+Top song changed from Springfield during SUMMER to Getaway Car during FALL
+---------
+```
+*Console output of *Feature 1*: statistics and side-by-side listening trend comparison between spring, summer, and fall semesters.*
 
 ### Data Structures
 We will be using a list of key-value pairs (`List<KeyValuePair>`) as the primary structure, with the `Timestamp` of each song being the key and the `SongInfo` object associated being the value, which contains information about each song. 
@@ -84,14 +123,89 @@ It first prints per-bucket statistics, then does side-by-side comparisons descri
 ### Feature 2: Detecting Outliers
 For each bucket from Feature 1, find days where a student’s listening behavior is different from their normal listening habits (by the genre they listen to the most). A day must have at least `MIN_PLAYS_PER_DAY = 4` to be flagged to avoid single-day "outliers." For each bucket, the results are sorted by play count descending and capped at the top 5 outliers per bucket.
 
-![Feature 2 Output](./images/Feature_2.png)  
+```java
+=== Outlier Days ===
+
+--- FALL ---
+  - 2017-12-22: played Metal 108 times, but usually Rock during FALL
+  - 2017-11-21: played Punk 96 times, but usually Rock during FALL
+  - 2017-12-17: played Progressive Metal 94 times, but usually Rock during FALL
+  - 2017-11-06: played Alternative 75 times, but usually Rock during FALL
+  - 2017-10-24: played Pop 69 times, but usually Rock during FALL
+
+--- SPRING ---
+  - 2017-02-07: played Metal 107 times, but usually Rock during SPRING
+  - 2017-01-18: played Alternative 91 times, but usually Rock during SPRING
+  - 2017-02-05: played Classical 89 times, but usually Rock during SPRING
+  - 2017-01-28: played Jazz 78 times, but usually Rock during SPRING
+  - 2017-01-21: played Metal 72 times, but usually Rock during SPRING
+
+--- SUMMER ---
+  - 2017-06-17: played Jazz 118 times, but usually Rock during SUMMER
+  - 2017-06-16: played Jazz 100 times, but usually Rock during SUMMER
+  - 2017-07-22: played Blues 94 times, but usually Rock during SUMMER
+  - 2017-06-05: played Jazz 90 times, but usually Rock during SUMMER
+  - 2017-06-27: played Classical 88 times, but usually Rock during SUMMER
+```
 *Feature 2 example output: flagging a specific date, such as `2017-12-22`, where a student listened to an unusual amount of "Metal" despite "Rock" being their seasonal norm.*
 
 ### Feature 3: Focused Recommendations
 Give the user song recommendations based on the student’s listening habits during the time window chosen. We recommend up to 15 songs that match the student's most popular genre for that specific context. 
 
-![Feature 3 Output](./images/Feature_3.png)  
-*Feature 3 example output: if your top genre during Fall was "Grunge," the system will output 15 Grunge tracks you haven't listened to yet.*
+```java
+=== Song Recommendations ===
+>> SPRING (Based on your top genre):
+  - Black Sun by Death Cab for Cutie (Rock)
+  - On My Side by Demon Hunter (Rock)
+  - Bitter With The Sweet by Carole King (Rock)
+  - Worn by Tenth Avenue North (Rock)
+  - House Party by Sublime With Rome (Rock)
+  - Already Gold by Iration (Rock)
+  - The Mighty Fall by Fall Out Boy (Rock)
+  - Wake Me Up by Foreign Air (Rock)
+  - One More Day by Diamond Rio (Rock)
+  - (You Make Me Feel Like) A Natural Woman by Carole King (Rock)
+  - Dead Inside by Muse (Rock)
+  - (Oh) Pretty Woman - 2015 Remaster by Van Halen (Rock)
+  - I Get the Picture by Mitchell Tenpenny (Rock)
+  - Hot Thoughts by Spoon (Rock)
+  - Rocket Queen by Guns N' Roses (Rock)
+
+>> SUMMER (Based on your top genre):
+  - Give Me Your Eyes by Brandon Heath (Rock)
+  - Stop! In The Name Of Love by The Supremes (Rock)
+  - Tú Sí Sabes Quererme (feat. Los Macorinos) by Natalia Lafourcade (Rock)
+  - How Much I Feel (45 Version) by Ambrosia (Rock)
+  - Fairytale of New York (feat. Kirsty MacColl) by The Pogues (Rock)
+  - With Me All Along by Bronze Radio Return (Rock)
+  - Hum Hallelujah by Fall Out Boy (Rock)
+  - How Many More Times - 1993 Remaster by Led Zeppelin (Rock)
+  - China Girl - 1999 Remastered Version by David Bowie (Rock)
+  - On The Line by Night Riots (Rock)
+  - New Speedway Boogie by Grateful Dead (Rock)
+  - Cry Little Sister by Marilyn Manson (Rock)
+  - Plans by Oh Wonder (Rock)
+  - Low by Cracker (Rock)
+  - Then Came the Last Days of May by Blue Öyster Cult (Rock)
+
+>> FALL (Based on your top genre):
+  - Say Say Say - Remastered 2015 by Paul McCartney (Rock)
+  - Spill The Wine by Eric Burdon (Rock)
+  - Pitchfork Kids by AJR (Rock)
+  - Empire (Let Them Sing) by Bring Me The Horizon (Rock)
+  - King Of Pain - Remastered 2003 by The Police (Rock)
+  - Box # 10 by Jim Croce (Rock)
+  - All Over by CRUISR (Rock)
+  - Devils Haircut by Beck (Rock)
+  - Stay Downtown by Cole Swindell (Rock)
+  - Machine Gun - Live at the Fillmore East by Jimi Hendrix (Rock)
+  - 63 Days by Atlas Genius (Rock)
+  - Andar Conmigo by Julieta Venegas (Rock)
+  - Never Been To Spain by Three Dog Night (Rock)
+  - "Down in New Orleans - From ""The Princess and the Frog""/Soundtrack Version" by Dr. John (Rock)
+  - In This Love by Stick Figure (Rock)
+```
+*Feature 3 example output: if your top genre during Fall was "Rock," the system will output 15 Rock tracks you haven't listened to yet.*
 
 ## Execution Instructions
 The central component of this software is the **`BetterWrapped.java`** file. All project features and logic are executed from this file's `public static void main` method.
@@ -100,12 +214,28 @@ The central component of this software is the **`BetterWrapped.java`** file. All
 2. **Select Analysis Window:** The console will ask which time window you would like to analyze: `WEEKDAY_VS_WEEKEND`, `ONE_SEMESTER`, or `FULL_YEAR`.
 3. **Configuration:** - If you choose **ONE_SEMESTER**, you will be prompted to input the number of midterms and breaks.
    - If you choose `ONE_SEMESTER`, you will be prompted to input the number of midterms and break, and then asked to input the start and end dates for those periods.
+```java
+=========================================
+Welcome to Better Wrapped Interactive!
+=========================================
+What time window would you like to analyze? (WEEKDAY_VS_WEEKEND, ONE_SEMESTER, FULL_YEAR): ONE_SEMESTER
+
+Detected listening history year: 2022
+
+How many midterms/finals would you like to enter? 1
+Enter midterm/final #1 date (MM-DD): 1
+Invalid format. Please use MM-DD. Example: 09-29 
+Enter midterm/final #1 date (MM-DD): 03-30
+How many breaks do you have? 
+1
+
+Enter BREAK #1 START date (MM-DD): 04-20
+Enter BREAK #1 END date (MM-DD): 04-22
+``` 
+*The user is prompted to select their analysis window.*
    - If you chooose `WEEKDAY_VS_WEEKEND` or `FULL_YEAR`, you will not be prompted to input anything since the system presets dates for those windows.
      - For the `FULL_YEAR` analysis, we consider January-April to be Spring Semester, May-August to be Summer Break, and September-December to be Fall Semester.
      - `FULL_YEAR` is defined to be from January to December *only*, so the program would not do full year with overlap (i.e. September 2022 to September 2023).
-
-![Console Menu](./images/prompt_screenshot.png)  
-*The user is prompted to select their analysis window.*
 
 4. **View Your Wrapped:** The program will process your CSV and display the statistics, detected outliers, and recommendations directly in the console.
 
