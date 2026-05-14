@@ -499,7 +499,7 @@ public class BetterWrapped {
 
         // ONE_SEMESTER 
         if (userWindow.equals("ONE_SEMESTER")) {
-            userWrapped = new BetterWrapped("src/BetterWrappedProject/ScrobblesForOneSemester.csv"); //so would i just change the name here if i'm assuming the user already has their csv uploaded properly?
+            userWrapped = new BetterWrapped("src/BetterWrappedProject/ScrobblesForSpringSemester.csv"); //so would i just change the name here if i'm assuming the user already has their csv uploaded properly?
 
             //figuring out the year
             List<KeyValuePair> history = userWrapped.getAllHistory();
