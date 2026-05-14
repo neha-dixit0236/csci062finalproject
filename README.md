@@ -2,7 +2,7 @@
 
 *Authors: Neha Dixit, Olivia Ma, Stefanie Nguyen*
 
-Better Wrapped is a more personalized and context-aware experience that not only summarizes music listening history but why and when they listened. It is especially tailored to students by looking at semester and year schedules. The full write-up with project motivation, analysis, and reflection can be found [here]([https://docs.google.com/document/d/11LSb0u0Y-2pWvhK-tQDKIbNrH4US5A39U8TY9_U_cIk/edit?tab=t.0](https://docs.google.com/document/d/101-mJg4NkhzfgP9eDJ299lXNP9pA6s6ord0t_SuiXIs/edit?usp=sharing)).
+Better Wrapped is a more personalized and context-aware experience that not only summarizes music listening history but why and when they listened. It is especially tailored to students by looking at semester and year schedules. The full write-up with project motivation, analysis, and reflection can be found [here](https://docs.google.com/document/d/101-mJg4NkhzfgP9eDJ299lXNP9pA6s6ord0t_SuiXIs/edit?usp=sharing).
 
 ## Table of Contents
 - [Project Intro](#project-intro-what-even-is-better-wrapped)
