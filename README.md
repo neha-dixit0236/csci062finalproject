@@ -10,8 +10,8 @@ Better Wrapped is a more personalized and context-aware experience that not only
 - [Project Structure](#project-structure)
 - [Feature Highlights](#feature-highlights)
 - [Execution Instructions](#execution-instructions)
-- [Public API Reference](#public-api-reference)
 - [Graphical User Interface (GUI)](#graphical-user-interface)
+- [Public API Reference](#public-api-reference)
 
 ## Project Intro: What even is Better Wrapped?
 At the end of every year, Spotify releases “Spotify Wrapped,” a slideshow that summarizes users’ listening habits over the past year. It compiles data on each users’ favorite artists, songs, and total minutes listened, and presents the information in a way that makes it easy for users to share their music summaries with each other. However, this music summary is static. It does not provide any insight into the ways a user’s listening habits change throughout time periods. We believe that music listening data is closely connected to one’s daily routines, emotional states, and life events. Thus, we built Better Wrapped, a more personalized and context-aware experience that not only summarizes listening history but also allows users to understand the differences between their music tastes during various academic time windows.
@@ -33,8 +33,8 @@ We use scrobble data from [last.fm](http://last.fm). [This dataset from Kaggle](
 
 ## How to Run the Code
 
-- To run the console version, execute `BetterWrapped.java`.
-- To run the JavaFX GUI version, execute `BetterWrappedGUILauncher.java` (macOS only). See the GUI section for details.
+- To run the console version, execute `BetterWrapped.java`. See the [Execution Instructions](#execution-instructions) section for details.
+- To run the JavaFX GUI version, execute `BetterWrappedGUILauncher.java` (macOS only). See the [GUI](#graphical-user-interface) section for details.
 
 ## Project Structure
 ```
@@ -102,6 +102,24 @@ The central component of this software is the **`BetterWrapped.java`** file. All
 *The user is prompted to select their analysis window.*
 
 4. **View Your Wrapped:** The program will process your CSV and display the statistics, detected outliers, and recommendations directly in the console.
+
+## Graphical User Interface
+
+For a more visual and interactive experience, this project includes a Graphical User Interface built with **JavaFX**. Since this is out of the scope of the class, we used LLMs to assist us in building the GUI. The full conversation transcript detailing this assistance can be found here: 
+[Claude AI Conversation Transcript](https://claude.ai/share/60df2777-4181-44d5-8081-8332fc97ae03).
+
+To launch the GUI, simply run the **`BetterWrappedGUILauncher.java`** file. 
+
+Because JavaFX is not a built-in library, we will need to configure the SDK for your system before running the GUI:
+
+1. Go to the [Gluon JavaFX](https://gluonhq.com/products/javafx/) download page and download the **JavaFX 21 SDK** for your specific OS (Windows, Mac, or Linux).
+2. Unzip the downloaded file, and drag the complete `lib/` folder from that download directly into your `csci062finalproject` folder.
+3. In VS Code, go to the **Java Projects** tab (bottom left), expand **Referenced Libraries**, click the **+** icon, and highlight all the `.jar` files in your newly downloaded `lib` folder.
+4. Hit run on **`BetterWrappedGUILauncher.java`**!
+
+Here's the demo of the GUI:
+
+![!Better Wrapped GUI Demo](./images/gui_demo.gif)  
 
 ## Public API Reference
 This section documents every public method on every class, with a usage example for each. Constructors come first within each class.
@@ -582,21 +600,3 @@ This section documents every public method on every class, with a usage example 
   System.out.println("Parsed " + history.size() + " plays");
   // Output: Parsed 192 plays
   ```
-
-## Graphical User Interface
-
-For a more visual and interactive experience, this project includes a Graphical User Interface built with **JavaFX**. Since this is out of the scope of the class, we used LLMs to assist us in building the GUI. The full conversation transcript detailing this assistance can be found here: 
-[Claude AI Conversation Transcript](https://claude.ai/share/60df2777-4181-44d5-8081-8332fc97ae03).
-
-To launch the GUI, simply run the **`BetterWrappedGUILauncher.java`** file. 
-
-Because JavaFX is not a built-in library, we will need to configure the SDK for your system before running the GUI:
-
-1. Go to the [Gluon JavaFX](https://gluonhq.com/products/javafx/) download page and download the **JavaFX 21 SDK** for your specific OS (Windows, Mac, or Linux).
-2. Unzip the downloaded file, and drag the complete `lib/` folder from that download directly into your `csci062finalproject` folder.
-3. In VS Code, go to the **Java Projects** tab (bottom left), expand **Referenced Libraries**, click the **+** icon, and highlight all the `.jar` files in your newly downloaded `lib` folder.
-4. Hit run on **`BetterWrappedGUILauncher.java`**!
-
-Here's the little demo of the GUI if it doesn't work for you!
-
-![!Better Wrapped GUI Demo](./images/gui_demo.gif)  
