@@ -68,7 +68,7 @@ We will be using a list of key-value pairs (`List<KeyValuePair>`) as the primary
 For features 1 and 2, we additionally map listening history into `Bucket` objects, where each bucket is named (e.g. `"MIDTERM"`, `"BREAK"`) and stores the list of plays that fall into it. For feature 3, we use a `Map<String, List<RecommendationSong>>` from bucket name to recommended songs.
 
 ### The Data Set
-We use scrobble data from [last.fm](http://last.fm). [This dataset from Kaggle](https://www.kaggle.com/datasets/basharsalman/lastfm), stored as `lastFMScrobblesDataSet.csv`, has timestamps as well as the artist, song name, and genre of each song. We will use [Chinook music database](https://www.kaggle.com/datasets/jacopoferretti/chinook-music-database?select=archive), stored as `MasterListofSongs(Feature3).csv`, which includes lots of different songs, for Feature 3. *None of the datasets have sensitive information.*
+We use scrobble data from [last.fm](http://last.fm). [This dataset from Kaggle](https://www.kaggle.com/datasets/basharsalman/lastfm), stored as `lastFMScrobblesDataSet.csv`, has timestamps as well as the artist, song name, and genre of each song. We will use [Chinook music database](https://www.kaggle.com/datasets/zaheenhamidani/ultimate-spotify-tracks-db), stored as `MasterListofSongs(Feature3).csv`, which includes lots of different songs, to recommend songs for Feature 3. *None of the datasets have sensitive information.*
 
 ## How to Run the Code
 
