@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "BetterWrapped",
+            "request": "launch",
+            "mainClass": "BetterWrappedProject.BetterWrapped",
+            "projectName": "finalproject_bc1cfd32"
+        },
+        {
+            "type": "java",
             "name": "BetterWrappedGUILauncher",
             "request": "launch",
             "mainClass": "BetterWrappedProject.BetterWrappedGUILauncher"
