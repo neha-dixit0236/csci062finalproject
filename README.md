@@ -36,6 +36,8 @@ We use scrobble data from [last.fm](http://last.fm). [This dataset from Kaggle](
 - To run the console version, execute `BetterWrapped.java`. See the [Execution Instructions](#execution-instructions) section for details.
 - To run the JavaFX GUI version, execute `BetterWrappedGUILauncher.java` (macOS only). See the [GUI](#graphical-user-interface) section for details.
 
+*The program assumes that the CSV with the user's listening history is nicely inputted and correctly formatted as shown by our existing CSV files. Users can create an alternate CSV of the same format and place it in `BetterWrappedProject` to run the program.*
+
 ## Project Structure
 ```
 csci062finalproject/
@@ -96,11 +98,11 @@ The central component of this software is the **`BetterWrapped.java`** file. All
 
 1. **Run the Main File:** Open and run `BetterWrapped.java`.
 2. **Select Analysis Window:** The console will ask which time window you would like to analyze: `WEEKDAY_VS_WEEKEND`, `ONE_SEMESTER`, or `FULL_YEAR`.
-
 3. **Configuration:** - If you choose **ONE_SEMESTER**, you will be prompted to input the number of midterms and breaks.
    - If you choose `ONE_SEMESTER`, you will be prompted to input the number of midterms and break, and then asked to input the start and end dates for those periods.
    - If you chooose `WEEKDAY_VS_WEEKEND` or `FULL_YEAR`, you will not be prompted to input anything since the system presets dates for those windows.
-     - For the `FULL_YEAR` analysis, spring semester is Jan 1 to 
+     - For the `FULL_YEAR` analysis, we consider January-April to be Spring Semester, May-August to be Summer Break, and September-December to be Fall Semester.
+     - `FULL_YEAR` is defined to be from January to December *only*, so the program would not do full year with overlap (i.e. September 2022 to September 2023).
 
 ![Console Menu](./images/prompt_screenshot.png)  
 *The user is prompted to select their analysis window.*
