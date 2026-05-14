@@ -59,11 +59,13 @@ csci062finalproject/
    ├── RecommendationSong.java              # a song that can be recommended to a user
    ├── MusicDataLoader.java                 # loads music listening history from a CSV
    ├── testScrobbles.csv                    # test dataset
+   ├── leadYearTesting.csv                  # test dataset for leap year
    ├── testSongs(Feature3).csv              # small recommendation test pool
    ├── MasterListofSongs(Feature3).csv      # recommendation candidate pool
    ├── ScrobblesForOneWeek.csv              # bundled dataset for one week
    ├── ScrobblesForOneSemester.csv          # bundled dataset for one semester
    ├── ScrobblesForOneYear.csv              # bundled dataset for one year
+   ├── ScrobblesForOneYear.csv              # bundled dataset for the spring semester
    └── lastFMScrobblesDataSet.csv           # full last.fm dataset
 ```
 
@@ -96,7 +98,9 @@ The central component of this software is the **`BetterWrapped.java`** file. All
 2. **Select Analysis Window:** The console will ask which time window you would like to analyze: `WEEKDAY_VS_WEEKEND`, `ONE_SEMESTER`, or `FULL_YEAR`.
 
 3. **Configuration:** - If you choose **ONE_SEMESTER**, you will be prompted to input the number of midterms and breaks.
-   - You will then be asked to input the start and end dates for those periods.
+   - If you choose `ONE_SEMESTER`, you will be prompted to input the number of midterms and break, and then asked to input the start and end dates for those periods.
+   - If you chooose `WEEKDAY_VS_WEEKEND` or `FULL_YEAR`, you will not be prompted to input anything since the system presets dates for those windows.
+     - For the `FULL_YEAR` analysis, spring semester is Jan 1 to 
 
 ![Console Menu](./images/prompt_screenshot.png)  
 *The user is prompted to select their analysis window.*
