@@ -552,6 +552,22 @@ public class BetterWrapped {
                             System.out.println("This date falls outside your semester's listening history (" + minDate.getMonthValue() + "-" + minDate.getDayOfMonth() + " to " + maxDate.getMonthValue() + "-" + maxDate.getDayOfMonth() + "). Please enter a valid date.");
                             continue;
                         }
+
+                        //check for duplicate midterm dates
+                        // check duplicate midterm dates
+                        boolean duplicateMidterm = false;
+
+                        for (Timestamp existing : midtermDates) {
+                            if (existing.toLocalDateTime().toLocalDate().isEqual(enteredDate.toLocalDate())) {
+                                duplicateMidterm = true;
+                                break;
+                            }
+                        }
+
+                        if (duplicateMidterm) {
+                            System.out.println("You already entered this midterm/final date. Please enter a unique date.");
+                            continue;
+                        }
                         
                         Timestamp timestamp = Timestamp.valueOf(enteredDate);
                         midtermDates.add(timestamp);
@@ -621,36 +637,60 @@ public class BetterWrapped {
                             continue;
                         }
 
-                        if (enteredEnd.isBefore(enteredStart)) {
-                            System.out.println("End date cannot be before start date. Please try again.");
+                        if (!enteredEnd.isAfter(enteredStart)) {
+                            System.out.println("Break end date must be after the start date. Please try again.");
                             continue;
                         }
                         
-                        boolean duplicate = false;
+                        boolean overlapsMidterm = false;
+
                         for (Timestamp midterm : midtermDates) {
                             LocalDateTime mt = midterm.toLocalDateTime();
-                            if (mt.toLocalDate().isEqual(enteredStart.toLocalDate()) || mt.toLocalDate().isEqual(enteredEnd.toLocalDate())) {
-                                duplicate = true;
+                            boolean insideBreak = (!mt.isBefore(enteredStart)) && (!mt.isAfter(enteredEnd));
+            
+                            if (insideBreak) {
+                                overlapsMidterm = true;
                                 break;
                             }
                         }
-                        if (duplicate) {
-                            System.out.println("You can't have duplicate dates. A break date cannot be the same as a midterm date. Please try again.");
-                            continue;
+
+                        if (overlapsMidterm) {
+                            System.out.println("Break dates cannot overlap with a midterm/final date. Please try again.");
+                        continue;
                         }
 
                         Timestamp breakStart = Timestamp.valueOf(enteredStart);
                         Timestamp breakEnd = Timestamp.valueOf(enteredEnd);
                         
+                        
+                        
+                        
+                        boolean overlapsBreak = false;
+
+                        for (int j = 0; j < breakDates.size() - 1; j += 2) {
+                            LocalDateTime existingStart = breakDates.get(j).toLocalDateTime();
+                            LocalDateTime existingEnd = breakDates.get(j + 1).toLocalDateTime();
+        
+                            boolean overlaps = !(enteredEnd.isBefore(existingStart) || enteredStart.isAfter(existingEnd));
+        
+                            if (overlaps) {
+                                overlapsBreak = true;
+                                break;
+                            }
+                        }
+
+                        if (overlapsBreak) {
+                            System.out.println("Breaks cannot overlap or repeat. Please enter a valid break.");
+                            continue;
+                        }
+ 
                         // add as pair
                         breakDates.add(breakStart);
                         breakDates.add(breakEnd);
 
                         break;
-
                     } 
                     catch (Exception e) {
-
                         System.out.println("Invalid format. Please use MM-DD. Example: 11-20 ");
                     }
                 }

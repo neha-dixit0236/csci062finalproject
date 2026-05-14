@@ -29,6 +29,7 @@ public class RecommendationEngine {
      */
     public Map<String, List<RecommendationSong>> recommendSongs(List<Bucket> buckets){
         Map<String, List<RecommendationSong>> result = new HashMap<>();
+        List<String> alreadyRecommended = new ArrayList<>();
 
         for (Bucket bucket : buckets){
             List<KeyValuePair> plays = bucket.getPlays();
@@ -69,7 +70,22 @@ public class RecommendationEngine {
                     continue;
                 }
 
+                // check if already recommended in another bucket
+                boolean alreadyRecommendedSong = false;
+
+                for (String previousSong : alreadyRecommended){
+                    if (previousSong.equalsIgnoreCase(song.getSongName())){
+                        alreadyRecommendedSong = true;
+                        break;
+                    }
+                }
+
+                if (alreadyRecommendedSong){
+                    continue;
+                }
+
                 recommendations.add(song);
+                alreadyRecommended.add(song.getSongName());
 
                 //making sure the list of recommended songs is not longer than 15 songs
                 if (recommendations.size() == 15){

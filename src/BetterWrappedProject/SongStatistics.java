@@ -61,13 +61,21 @@ public class SongStatistics {
      */
     private String findMax(HashMap<String, Integer> map){
         String winner = "None";
-        int max = 0;
+        int max = -1;
 
-        for (Map.Entry<String, Integer> entry : map.entrySet()){
-            if (entry.getValue() > max){
-                max = entry.getValue();
-                winner = entry.getKey();
+        for (String key : map.keySet()){
+            int count = map.get(key);
+
+            // normal maximum
+            if (count > max){
+                max = count;
+                winner = key;
             }
+            //if there's a tie in the max song/artist/genre, display the song/artist/genre that is alphabetically earlier
+            else if (count == max && key.compareTo(winner) < 0){
+                winner = key;
+            }
+
         }
 
         return winner;
