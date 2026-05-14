@@ -446,7 +446,7 @@ This section documents every public method on every class, with a usage example 
   //   - 2017-12-22: played Metal 12 times, but usually Rock during NORMAL
   ```
  
-### `OutlierDay` (a single flagged day)
+### `OutlierDay`
  
 #### `public OutlierDay(LocalDate date, String dayGenre, String baselineGenre, String bucketName, int playCount)`
 - **Description:** Constructor.
@@ -504,7 +504,7 @@ This section documents every public method on every class, with a usage example 
   // Output:   - 2023-12-22: played Metal 12 times, but usually Rock during NORMAL
   ```
 
-### `RecommendationEngine` (Feature 3)
+### `RecommendationEngine`
  
 #### `public RecommendationEngine(List<RecommendationSong> recommendationSongs, List<KeyValuePair> listeningHistory)`
 - **Description:** Constructor. `recommendationSongs` is the candidate pool, `listeningHistory` is used to filter out already-listened songs.
@@ -589,7 +589,7 @@ This section documents every public method on every class, with a usage example 
   // Output: Loaded 232725 candidate songs
   ```
  
-### `MusicDataLoader` (CSV parser for listening history)
+### `MusicDataLoader`
  
 #### `public static List<KeyValuePair> CSVAnalysis(String file)`
 - **Description:** Reads a CSV in the last.fm format (`"DD MMM YYYY, H:mm",Artist,AlbumArtist,Song,Genre,Subgenre`) and returns a list of `KeyValuePair` objects. Uses a regex split that respects quoted timestamps. Returns an empty list on I/O failure.
