@@ -20,7 +20,7 @@ Specifically, Better Wrapped introduces three key features. First, it maps liste
 
 ### Example Output
 
-```java
+```
 Note: For FULL_YEAR analysis, we consider January-April to be Spring Semester, May-August to be Summer Break, and September-December to be Fall Semester.
 Please ensure your listening history is from January to December of the same year (e.g., not from September of one year to September of another).
 
@@ -82,7 +82,7 @@ We use scrobble data from [last.fm](http://last.fm). [This dataset from Kaggle](
 csci062finalproject/
 ├── README.md
 ├── lib/                                    # included .jar files for GUI launcher
-├── images/                                 # example screenshots used in README
+├── images/                                 # example/demo used in README
 └── src/BetterWrappedProject/
    ├── BetterWrapped.java                   # entry point + use the program
    ├── BetterWrappedTesting.java            # test driver
@@ -123,7 +123,7 @@ It first prints per-bucket statistics, then does side-by-side comparisons descri
 ### Feature 2: Detecting Outliers
 For each bucket from Feature 1, find days where a student’s listening behavior is different from their normal listening habits (by the genre they listen to the most). A day must have at least `MIN_PLAYS_PER_DAY = 4` to be flagged to avoid single-day "outliers." For each bucket, the results are sorted by play count descending and capped at the top 5 outliers per bucket.
 
-```java
+```
 === Outlier Days ===
 
 --- FALL ---
@@ -152,7 +152,7 @@ For each bucket from Feature 1, find days where a student’s listening behavior
 ### Feature 3: Focused Recommendations
 Give the user song recommendations based on the student’s listening habits during the time window chosen. We recommend up to 15 songs that match the student's most popular genre for that specific context. 
 
-```java
+```
 === Song Recommendations ===
 >> SPRING (Based on your top genre):
   - Black Sun by Death Cab for Cutie (Rock)
@@ -214,7 +214,7 @@ The central component of this software is the **`BetterWrapped.java`** file. All
 2. **Select Analysis Window:** The console will ask which time window you would like to analyze: `WEEKDAY_VS_WEEKEND`, `ONE_SEMESTER`, or `FULL_YEAR`.
 3. **Configuration:** - If you choose **ONE_SEMESTER**, you will be prompted to input the number of midterms and breaks.
    - If you choose `ONE_SEMESTER`, you will be prompted to input the number of midterms and break, and then asked to input the start and end dates for those periods.
-```java
+```
 =========================================
 Welcome to Better Wrapped Interactive!
 =========================================
